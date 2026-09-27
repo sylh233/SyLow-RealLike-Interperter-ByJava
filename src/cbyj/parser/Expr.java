@@ -1,0 +1,135 @@
+package cbyj.parser;
+
+import java.util.List;
+import cbyj.lexer.*;
+
+abstract public class Expr {
+	abstract <R> R accept(Visitor<R> visitor);
+	static class Binary extends Expr{
+		final Expr left,right;
+		final Token operator;
+		Binary(Expr left,Token operator,Expr right){
+			this.left = left;
+			this.operator = operator;
+			this.right = right;
+		}
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitBinary(this);
+		}
+	}
+
+	static class Grouping extends Expr{
+		final List<Expr> exprs;
+		Grouping(List<Expr> exprs){
+			this.exprs = exprs;
+		}
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitGrouping(this);
+		}
+	}
+
+	static class Literal extends Expr{
+		final Object value;
+		Literal(Object value){
+			this.value = value;
+		}
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitLiteral(this);
+		}
+	}
+
+	static class Unary extends Expr{
+		final Token operator;
+		final Expr expr;
+		Unary(Token operator,Expr expr){
+		    this.operator = operator;
+			this.expr = expr;
+		}
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitUnary(this);
+		}
+	}
+	static class Variable extends Expr{
+		final Token name;
+		Variable(Token name){
+			this.name = name;
+		}
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitVariable(this);
+		}
+	}
+	static class Assign extends Expr {
+	    final Token name;
+		final Expr value;
+		Assign(Token name,Expr expr){
+			this.name = name;
+			this.value = expr;
+		}
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitAssign(this);
+		}
+	}
+	static class Logical extends Expr{
+		final Expr left,right;
+		final Token operator;
+		Logical(Expr left,Token operator,Expr right){
+			this.left = left;
+			this.operator = operator;
+			this.right = right;
+		}
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitLogical(this);
+		}
+	}
+	static class Statement extends Expr{
+		final Stmt stmt;
+		Statement(Stmt stmt){
+			this.stmt = stmt;
+		}
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitStatement(this);
+		}
+	}
+	static class aList extends Expr{
+		final Expr[] list;
+		aList(Expr[] list){
+			this.list = list;
+		}
+		@Override
+		<R> R accept(Visitor<R> visitor){
+			return visitor.visitAList(this);
+		}
+	}
+	static class ListItem extends Expr{
+	    final Expr expr;
+		final Expr index;
+		ListItem(Expr expr,Expr index){
+			this.expr = expr;
+			this.index = index;
+		}
+		@Override
+		<R> R accept(Visitor<R> visitor){
+			return visitor.visitListItem(this);
+		}
+	}
+	public interface Visitor<R> {
+		R visitBinary(Expr.Binary binary);
+		R visitGrouping(Expr.Grouping grouping);
+		R visitLiteral(Expr.Literal literal);
+		R visitUnary(Expr.Unary unary);
+		R visitVariable(Expr.Variable variable);
+		R visitAssign(Expr.Assign assign);
+		R visitLogical(Expr.Logical logical);
+		R visitStatement(Expr.Statement statement);
+		R visitAList(Expr.aList aList);
+		R visitListItem(Expr.ListItem listItem);
+	}
+}

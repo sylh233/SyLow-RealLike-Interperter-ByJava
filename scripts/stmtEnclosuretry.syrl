@@ -1,0 +1,12 @@
+=>[
+	$ a = 10,
+	Write :line ["a = " + a],
+	$ fn = "{\n\t",
+	fn = fn + [$ b = a],
+	fn = fn + ";\n\tWrite :line [\"b = \" + b];\n}",
+	Write :line "Enclosure is \n" + fn,
+	a = 20,
+	Write :line ["now a = " + a],
+	`fn,
+	"Finish!"
+]

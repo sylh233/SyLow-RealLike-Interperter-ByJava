@@ -1,0 +1,15 @@
+SyLow RealLike Demo!
+
+=>[
+	$ a = 10,
+	{
+		$ b = a;
+		$ function = "Write # [9 - b] \"HelloWorld\"";
+		@{
+			?[b <= 0](<= `"[Write \"Hello\",Write 233]");
+			b = b - 1;
+			`function;
+		};
+	},
+	Write "Hello"
+]

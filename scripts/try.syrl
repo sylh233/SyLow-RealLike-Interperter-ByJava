@@ -1,0 +1,18 @@
+=>[{
+	Super;
+	super;
+	Super1;
+	Origin;
+	a = "233
+	233
+	345
+	";
+	a1 = "syrl";
+	b = 10000;
+	c = [b + 999.99];
+	msg: -String= "Hello World!";
+	?[c == b](Console: -Super Write msg,Console: -Super Write "No");
+	?1(<= 0,<= 1);
+	},
+	0
+]

@@ -1,0 +1,9 @@
+=>[
+	$ input,
+	{
+		Write :noun "Input something:";
+		input = Read;
+		Write :line "You input: " + input;
+	},
+	0
+]
