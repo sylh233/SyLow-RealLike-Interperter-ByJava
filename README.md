@@ -124,6 +124,68 @@ $ var [# length] [= value] // 声明语句，#表示要声明一个数组，=后
 ```
 赋值和选择等属于表达式而非语句，故不再此列
 
+### 字符串语句
+作为SyRL的一个基本上"唯一"有特色的特性，字符串语句可以实现类似于函数或者闭包的效果；
+
+在SyRL正式实现函数和闭包的官方特性前，可以使用其作为替代:
+```
+作为函数
+>>> $ String = "Write :line \"Hello World\""
+Start:
+Value: $ String = Write :line "Hello World"
+>>> `String
+Start:
+Hello World
+Value: Hello World
+```
+
+字符串语句在执行时有自己的作用域：
+```
+>>> $ fn = "$ a = 1"
+Start:
+Value: "$ fn = $ a = 1"
+>>> `fn
+Start:
+Value: "$ a = 1"
+>>> a
+Start:
+Undefined Variable a! // 这里的a是在字符串中声明的，在字符串语句执行完后就被释放了
+[Line 1]
+Value: null
+```
+
+实现闭包：
+```
+=>[
+	$ a = 10,
+	Write :line ["a = " + a],
+	$ fn = "{\n\t",
+	$ b = 6,
+	fn = fn + [$ b = a], // 利用声明语句返回值的等号右边是计算后的结果的特性
+	// 而且在此处将$ b = a放入一个具有局部作用域的表达式组，在声明执行完并退出后表达式组后，局部的b变量会被释放，不会污染全局作用域
+	Write :line "b = " + b,
+	fn = fn + ";\n\tWrite :line [\"b = \" + b];\n}",
+	Write :line "Enclosure is \n" + fn,
+	a = 20,
+	Write :line ["now a = " + a],
+	`fn,
+	"Finish!"
+]
+
+Start:
+a = 10
+b = 6 // 可以看到确实没有改变外部b的值
+Enclosure is 
+{
+	$ b = 10; // 这里的b不再是a，而是a的值10
+	Write :line ["b = " + b];
+}
+now a = 20 // 哪怕修改了a的值，b的值也不变
+b = 10
+Value: "Finish!"
+```
+
+
 ## 表达式和运算符
 表达式分为：
 ```
@@ -195,4 +257,3 @@ c = ? 0 "Hello" // c = "H" 是一个字符串而不是一个字符，SyRL的字�
 ? true (0,1) // 0，true在选择表达式的index一项中等同于0（而不是1），这是为了使它更接近通常使用的if语句
 ? false (0,1) // 1
 ```
-

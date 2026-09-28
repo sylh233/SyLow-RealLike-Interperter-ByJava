@@ -37,7 +37,8 @@ public class cbyj {
 		if (hadRuntimeError) {
 			System.exit(0x46);
 		}
-		System.out.println("Value: " + value);
+		
+		printValue(value);
 	}
 
 	private static void runPrompt() throws IOException{
@@ -50,8 +51,18 @@ public class cbyj {
 				break;
 			}
 		    Object value = run_noStruct(line);
-			System.out.println("Value: " + value);
+			printValue(value);
 			hadError = false;
+		}
+	}
+
+	private static void printValue(Object value){
+		String valueStr = "";
+		if(value instanceof String){
+			valueStr = "\"" + (String)value + "\"";
+			System.out.println("Value: " + valueStr);
+		}else{
+			System.out.println("Value: " + value);
 		}
 	}
 
