@@ -50,6 +50,7 @@ public enum TokenType{
 	// Suger
 	S_WHILE,S_FOR,					// while,for
 	S_BREAK,						// break
+	S_RET,							// return
 
 	EOF,
 }

@@ -90,6 +90,7 @@ public class Parser {
 		if(match(S_BREAK)) return breakSuger();
 		if(match(S_FOR)) return forSuger();
 		if(match(S_WHILE)) return whileSuger();
+		if(match(S_RET)) return returnStmt();
 		
 		return null;
 	}

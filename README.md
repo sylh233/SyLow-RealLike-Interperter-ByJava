@@ -257,3 +257,31 @@ c = ? 0 "Hello" // c = "H" 是一个字符串而不是一个字符，SyRL的字�
 ? true (0,1) // 0，true在选择表达式的index一项中等同于0（而不是1），这是为了使它更接近通常使用的if语句
 ? false (0,1) // 1
 ```
+
+## 语法糖
+目前的语法糖仅有用于循环的几种
+
+### 循环
+'@'循环本身是纯粹的循环，只能手动用'<'退出或用'<='退出到更外侧的表达式组;
+
+为了使得循环写起来更简单，因此对于循环加了几个语法糖：
+```
+for循环：
+for($ i = 0;i < 10;i = i + 1){
+	Write :line "hello";
+}
+
+while循环：
+while([i < 10]){
+	Write :line "hello";
+	i = i + 1;
+}
+
+break语句:
+break // <
+
+return语句:
+return "Expression" // <= "Expression"
+
+```
+

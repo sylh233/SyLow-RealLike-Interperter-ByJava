@@ -288,6 +288,7 @@ public class Scanner{
 		keywords.put("while", S_WHILE);
 		keywords.put("for", S_FOR);
 		keywords.put("break", S_BREAK);
+		keywords.put("return", S_RET);
 	}
 
 	// private void stmt(){

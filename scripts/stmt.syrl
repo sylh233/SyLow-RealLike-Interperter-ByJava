@@ -21,5 +21,9 @@
 		loop = loop - 1;
 		? [loop < 0] (<);
 	};
+	while([loop < 10]){
+		  Write :line "Halo";
+		  loop = loop + 1;
+	};
 	},
 	0]
