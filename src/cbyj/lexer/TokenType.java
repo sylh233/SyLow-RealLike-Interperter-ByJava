@@ -43,9 +43,9 @@ public enum TokenType{
 	// keywords
 	SUPER,ORG,					// Super,Origin
 	WRITE,						// Write
-	W_NOUN,W_LINE,W_FILE,				// noun,line,file
 	READ,						// Read
 	TRUE,FALSE,					// true,false
+	NULL,						// NULL
 
 	// Suger
 	S_WHILE,S_FOR,					// while,for

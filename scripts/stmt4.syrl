@@ -1,1 +1,1 @@
-=>Write "Hello World"
+=>Write :line "Hello World"

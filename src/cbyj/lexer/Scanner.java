@@ -283,9 +283,7 @@ public class Scanner{
 		keywords.put("false", FALSE);
 		keywords.put("Write", WRITE);
 		keywords.put("Read", READ);
-		keywords.put("noun", W_NOUN);
-		keywords.put("line", W_LINE);
-		keywords.put("file", W_FILE);
+		keywords.put("null", NULL);
 
 		keywords.put("while", S_WHILE);
 		keywords.put("for", S_FOR);

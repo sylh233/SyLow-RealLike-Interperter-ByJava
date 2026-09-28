@@ -1,22 +1,25 @@
-Write "Hello 'SyLow RealLike' world!";
-$ var1 = 100;
-Write var1;
-$ var2 = var1 * 233 * 0.0001;
-$ msg = "Hello World";
-Write var2 + var1;
-Write msg;
-$ stmt1 = `Write "Gen Programming!";`;
-'stmt1;
-$ write = `Write `;
-$ msg2 = `msg `;
-$ semicolon = `;`;
-// Write [write + msg2 + semicolon];
-'[write + msg2 + semicolon];
-msg = "Hello Wch!";
-'[write + msg2 + semicolon];
-$ loop = 100;
-@{
-	Write "Hello "+loop;
-	loop = loop - 1;
-	? [loop < 0] (<;);
-}
+=>[
+	{
+	Write :line "Hello 'SyLow RealLike' world!";
+	$ var1 = 100;
+	Write :line var1;
+	$ var2 = var1 * 233 * 0.0001;
+	$ msg = "Hello World";
+	Write :line var2 + var1;
+	Write :line msg;
+	$ stmt1 = "Write :line \"Gen Programming!\"";
+	`stmt1;
+	$ write = "Write :line ";
+	$ msg2 = "msg ";
+	// Write [write + msg2];
+	`[write + msg2];
+	msg = "Hello Wch!";
+	`[write + msg2];
+	$ loop = 10;
+	@{
+		Write :line ["Hello "+loop];
+		loop = loop - 1;
+		? [loop < 0] (<);
+	};
+	},
+	0]

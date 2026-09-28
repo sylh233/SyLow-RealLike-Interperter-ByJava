@@ -42,9 +42,9 @@ public class Parser {
 	public List<Expr> parse_noStruct(){
 		List<Expr> exprs = new ArrayList<>();
 		try {
-		    while(!isEnd()){
+			do {
 				exprs.add(expr());
-			}
+			} while (!isEnd() && match(COMMA,SEMI));
 			return exprs;
 		} catch (ParseError error) {
 		    return null;
@@ -82,7 +82,6 @@ public class Parser {
 		if(match(DOLAR)) return declStmt();
 		if(match(GRAVE)) return literalStmt();
 		if(match(LEFT_BRACE)) return new Stmt.Block(block());
-		if(match(QUES)) return ifStmt();
 		if(match(AT)) return loopStmt();
 		if(match(LESS)) return breakStmt();
 		if(match(RETURN)) return returnStmt();
@@ -97,17 +96,18 @@ public class Parser {
 
 	private Stmt writeStmt(){
 		Write.Mode mode = Write.Mode.NOUN;
-		if(match(COLON)){
+		while(match(COLON)){
 			Token token = advance();
-			switch (token.type) {
-			case W_LINE:
+			switch (token.lexeme) {
+			case "line":
 				mode = Write.Mode.LINE;
 				break;
-			case W_FILE:
+			case "file":
 				mode = Write.Mode.FILE;
 				break;
-			case W_NOUN:
+			case "noun":
 			default:
+				mode = Write.Mode.NOUN;
 				break;
 			}
 		}
@@ -130,8 +130,9 @@ public class Parser {
 		Expr initializer = null;
 		Expr length = null;
 		if(match(SHARP)){
-			length = expr();
-		}else if(match(EQUAL)){
+			length = or();		// 防止识别后面的等号
+		}
+		if(match(EQUAL)){
 			initializer = expr();
 		}
 		// consume(SEMI, "Expect ';' after variable declaration!");
@@ -166,25 +167,35 @@ public class Parser {
 		return stmts;
 	}
 
-	private Stmt ifStmt(){
-		// ? [condition] (if,else...);
-		Expr condition = expr();
-		consume(LEFT_PAREN, "Expect '(' after Condition!");
-		Stmt ifstmt;
-		if(check(COMMA)){
-			ifstmt = null;
+	private Expr select(){
+		// ?/# [condition] (list);
+		Expr condition = or();
+		Expr list;
+		if(match(STRING)){
+			list = new Expr.Literal(previous().literal);
+		}else if(match(IDENTIFIER)){
+			list = new Expr.Variable(previous());
+		}else if(match(LEFT_PAREN)){
+			list = alist();
 		}else{
-			ifstmt = statement();
+			list = expr();
 		}
+		// consume(LEFT_PAREN, "Expect '(' after Condition!");
 		
-		List<Stmt> elsestmt = new ArrayList<>();
-		while(match(COMMA)){
-			elsestmt.add(statement());
-		}
-		consume(RIGHT_PAREN, "Expect ')' after Statement Branch!");
+		// if(check(COMMA)){
+		// 	ifstmt = null;
+		// }else{
+		// 	ifstmt = statement();
+		// }
+		
+		// List<Stmt> elsestmt = new ArrayList<>();
+		// while(match(COMMA)){
+		// 	elsestmt.add(statement());
+		// }
+		// consume(RIGHT_PAREN, "Expect ')' after Statement Branch!");
 		// consume(SEMI, "Expect ';' after Condition statements!");
 		
-		return new Stmt.IfStmt(condition, ifstmt, elsestmt);
+		return new Expr.Select(condition, list);
 	}
 
 	private Stmt loopStmt(){
@@ -230,7 +241,15 @@ public class Parser {
 			Expr value = expr();
 			if(expr instanceof Expr.Variable){
 				return new Expr.Assign(((Expr.Variable)expr).name, value);
+			}else if(expr instanceof Expr.Select){
+				Expr.Select select = (Expr.Select)expr;
+				if(select.list instanceof Expr.Variable){
+					Expr.Variable var = (Expr.Variable)select.list;
+					return new Expr.Assign(var.name, value, select.condition);
+				}// else if(select.list instanceof Expr.aList){
+				// }
 			}
+			
 			// if(expr instanceof Expr.ListItem){
 			// 	return new Expr.Assign(((Expr.ListItem)expr).name,
 			// 						   ((Expr.ListItem)expr).index, value);
@@ -364,6 +383,9 @@ public class Parser {
 		if(match(I32,F64,STRING,C8)){
 			return new Expr.Literal(previous().literal);
 		}
+		if(match(NULL)){
+			return new Expr.Literal(null);
+		}
 		if(match(EXPR_BEGIN)){
 		    List<Expr> exprs = new ArrayList<>();
 			Expr first;
@@ -383,7 +405,7 @@ public class Parser {
 		if(match(IDENTIFIER)){
 			return new Expr.Variable(previous());
 		}
-		if(match(SHARP)) return listItem();
+		if(match(SHARP,QUES)) return select();
 
 		for (TokenType tokenType : BinaryType) {
 			if(match(tokenType)){
@@ -405,11 +427,11 @@ public class Parser {
 		return new Expr.aList(array.toArray(new Expr[array.size()]));
 	}
 
-	private Expr listItem(){
-		Expr index = expr();
-		Expr expr = expr();
-		return new Expr.ListItem(expr, index);
-	}
+	// private Expr listItem(){
+	// 	Expr index = expr();
+	// 	Expr expr = expr();
+	// 	return new Expr.ListItem(expr, index);
+	// }
 
 	private Token consume(TokenType type,String msg){
 		if (check(type)) return advance();
@@ -456,13 +478,13 @@ public class Parser {
 
 		Expr condition = null;
 		if(!check(SEMI)){
-			condition = expr();
+			condition = assignment();
 		}
 		consume(SEMI, "Expect ';' after for-loop condition!");
 
 		Expr increment = null;
 		if(!check(RIGHT_PAREN)){
-			increment = expr();
+			increment = assignment();
 		}
 		consume(RIGHT_PAREN, "Expect ')' after for-loop increment!");
 
@@ -476,9 +498,9 @@ public class Parser {
 			condition = new Expr.Literal(true);
 		}
 		List<Stmt> block = new ArrayList<>();
-		block.add(new Stmt.IfStmt(condition,null,
-								  Arrays.asList(new Stmt.BreakStmt(null))
-								  ));
+		Expr[] list = {null,new Expr.Statement(new Stmt.BreakStmt(null))};
+		Expr alist = new Expr.aList(list);
+		block.add(new Stmt.Expression(new Expr.Select(condition, alist)));
 		block.addAll(block());
 		if(increment != null){
 			block.add(new Stmt.Expression(increment));
@@ -492,9 +514,12 @@ public class Parser {
 	    consume(RIGHT_PAREN, "Expect ')' after condition!");
 		consume(LEFT_BRACE, "Expect a Block('{','}') after while-loop!");
 		List<Stmt> block = new ArrayList<>();
-		block.add(new Stmt.IfStmt(condition,null,
-								  Arrays.asList(new Stmt.BreakStmt(null))
-								  ));
+		Expr[] list = {null,new Expr.Statement(new Stmt.BreakStmt(null))};
+		Expr alist = new Expr.aList(list);
+		// block.add(new Stmt.IfStmt(condition,null,
+		// 						  Arrays.asList(new Stmt.BreakStmt(null))
+		// 						  ));
+		block.add(new Stmt.Expression(new Expr.Select(condition, alist)));
 		block.addAll(block());
 		return new Stmt.LoopStmt(new Stmt.Block(block));
 	}

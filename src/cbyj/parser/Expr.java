@@ -66,9 +66,16 @@ abstract public class Expr {
 	static class Assign extends Expr {
 	    final Token name;
 		final Expr value;
+		final Expr index;
 		Assign(Token name,Expr expr){
 			this.name = name;
 			this.value = expr;
+			this.index = null;
+		}
+		Assign(Token name,Expr expr,Expr index){
+			this.name = name;
+			this.value = expr;
+			this.index = index;
 		}
 		@Override
 		<R> R accept(Visitor<R> visitor) {
@@ -108,16 +115,28 @@ abstract public class Expr {
 			return visitor.visitAList(this);
 		}
 	}
-	static class ListItem extends Expr{
-	    final Expr expr;
-		final Expr index;
-		ListItem(Expr expr,Expr index){
-			this.expr = expr;
-			this.index = index;
+	// static class ListItem extends Expr{
+	//     final Expr expr;
+	// 	final Expr index;
+	// 	ListItem(Expr expr,Expr index){
+	// 		this.expr = expr;
+	// 		this.index = index;
+	// 	}
+	// 	@Override
+	// 	<R> R accept(Visitor<R> visitor){
+	// 		return visitor.visitListItem(this);
+	// 	}
+	// }
+	static class Select extends Expr{
+		final Expr condition;
+		final Expr list;
+		public Select(Expr condition,Expr list){
+			this.condition = condition;
+			this.list = list;
 		}
 		@Override
-		<R> R accept(Visitor<R> visitor){
-			return visitor.visitListItem(this);
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitSelect(this);
 		}
 	}
 	public interface Visitor<R> {
@@ -130,6 +149,7 @@ abstract public class Expr {
 		R visitLogical(Expr.Logical logical);
 		R visitStatement(Expr.Statement statement);
 		R visitAList(Expr.aList aList);
-		R visitListItem(Expr.ListItem listItem);
+		// R visitListItem(Expr.ListItem listItem);
+		R visitSelect(Expr.Select select);
 	}
 }

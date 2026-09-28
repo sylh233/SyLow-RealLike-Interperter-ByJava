@@ -214,7 +214,12 @@ public class Interpreter implements Expr.Visitor<Object>,
 	public Object visitAssign(Expr.Assign assign){
 		// return variable.name.literal;
 		Object value = eval(assign.value);
-		environment.assign(assign.name, value);
+		if(assign.index == null){
+			environment.assign(assign.name, value);
+		}else{
+			int index = (Integer)eval(assign.index);
+			environment.assign(assign.name, index, value);
+		}
 		return value;
 	}
 	@Override
@@ -235,25 +240,80 @@ public class Interpreter implements Expr.Visitor<Object>,
 	public Object visitAList(Expr.aList aList){
 		return Arrays.stream(aList.list).map(x -> eval(x)).toArray();
 	}
+	// @Override
+	// public Object visitListItem(Expr.ListItem listItem){
+	// 	int index = (Integer)eval(listItem.index);
+	// 	if(listItem.expr instanceof Expr.Variable){
+	// 		Expr.Variable variable = (Expr.Variable)listItem.expr;
+	// 		Object[] list = (Object[])environment.get(variable.name);
+	// 		return list[index];
+	// 	}else if(listItem.expr instanceof Expr.Assign){
+	// 		Expr.Assign assign = (Expr.Assign)listItem.expr;
+	// 		Object value = eval(assign.value);
+	// 		environment.assign(assign.name,
+	// 						   index,
+	// 						   value);
+	// 		return value;
+	// 	}else if(listItem.expr instanceof Expr.Literal){
+	// 		Object value = eval(listItem.expr);
+	// 		String s = stringify(value);
+	// 		return s.charAt(index);
+	// 	}
+	// 	return null;
+	// }
 	@Override
-	public Object visitListItem(Expr.ListItem listItem){
-		int index = (Integer)eval(listItem.index);
-		if(listItem.expr instanceof Expr.Variable){
-			Expr.Variable variable = (Expr.Variable)listItem.expr;
-			Object[] list = (Object[])environment.get(variable.name);
-			return list[index];
-		}else if(listItem.expr instanceof Expr.Assign){
-			Expr.Assign assign = (Expr.Assign)listItem.expr;
-			Object value = eval(assign.value);
-			environment.assign(assign.name,
-							   index,
-							   value);
-			return value;
-		}else if(listItem.expr instanceof Expr.Literal){
-			Object value = eval(listItem.expr);
-			String s = stringify(value);
-			return s.charAt(index);
+	public Object visitSelect(Expr.Select select) {
+		Object condition = eval(select.condition);
+		int index = 0;
+		if(condition instanceof Boolean){
+			Boolean b = (Boolean)condition;
+			if(b){
+				index = 0;
+			}else{
+				index = 1;
+			}
+		}else if(condition instanceof Integer){
+			index = (Integer)condition;
 		}
+		
+	    if(select.list instanceof Expr.aList){
+			Expr.aList list = (Expr.aList)select.list;
+			if(index < list.list.length){
+				Object result = eval(list.list[index]);
+				return result;
+			}
+		}else if(select.list instanceof Expr.Literal){
+			String str = stringify(eval(select.list));
+			if(index < str.length()){
+				return str.charAt(index);
+			}
+		}else if(select.list instanceof Expr.Variable){
+			Expr.Variable var = (Expr.Variable)select.list;
+			Object object = environment.get(var.name);
+			if(object instanceof Object[]){
+				 Object[] list = (Object[])object;
+				 if(index < list.length)
+					 return list[index];
+			}else
+				return object;
+		}
+		// if(condition instanceof Boolean){
+		// 	if((Boolean)condition){
+		// 		exec(selectStmt.ifstmt);
+		// 	}else if(selectStmt.elsestmt.size() > 0){
+		// 		exec(selectStmt.elsestmt.get(0));
+		// 	}
+		// }else if(condition instanceof Integer){
+		// 	Integer index = (Integer)condition;
+		// 	if(index < 0) {
+		// 		return null;
+		// 	}else if(index == 0) {
+		// 		exec(selectStmt.ifstmt);
+		// 	}else if(index > 0 &&
+		// 			 selectStmt.elsestmt.size() >= index){
+		// 		exec(selectStmt.elsestmt.get(index - 1));
+		// 	}
+		// }
 		return null;
 	}
 	
@@ -289,19 +349,23 @@ public class Interpreter implements Expr.Visitor<Object>,
 			return "$ " + declare.name.lexeme + " = " + stringify(value);
 		}else{
 			int length = (Integer)eval(declare.length);
-			Object list = new Object[length];
-			environment.define(declare.name.lexeme, list);
-			// {
-			// 	Object[] src = (Object[])eval(declare.initializer);
-			// 	if(src.length <= length){
-			// 		System.arraycopy(src, 0,
-			// 						 list, 0, src.length);
-			// 	}else{
-			// 		// throw new RuntimeError("List value's length must be less than list variable's length!");
-			// 		System.arraycopy(src, 0,
-			// 						 list, 0, length);
-			// 	}
-			// }
+			Object[] list = new Object[length];
+			
+			Object init = eval(declare.initializer);
+			if(init instanceof Object[]){
+				Object[] src = (Object[])init;
+				if(src.length <= length){
+					System.arraycopy(src, 0,
+									 list, 0, src.length);
+				}else{
+					// throw new RuntimeError("List value's length must be less than list variable's length!");
+					System.arraycopy(src, 0,
+									 list, 0, length);
+				}
+			}else{
+				list[0] = init;
+			}
+			environment.define(declare.name.lexeme, (Object)list);
 		}
 		return null;
 	}
@@ -344,28 +408,6 @@ public class Interpreter implements Expr.Visitor<Object>,
 			this.environment = previous;
 		}
 	    return;
-	}
-	@Override
-	public Void visitIfStmt(Stmt.IfStmt ifStmt) {
-		Object condition = eval(ifStmt.condition);
-		if(condition instanceof Boolean){
-			if((Boolean)condition){
-				exec(ifStmt.ifstmt);
-			}else if(ifStmt.elsestmt.size() > 0){
-				exec(ifStmt.elsestmt.get(0));
-			}
-		}else if(condition instanceof Integer){
-			Integer index = (Integer)condition;
-			if(index < 0) {
-				return null;
-			}else if(index == 0) {
-				exec(ifStmt.ifstmt);
-			}else if(index > 0 &&
-					 ifStmt.elsestmt.size() >= index){
-				exec(ifStmt.elsestmt.get(index - 1));
-			}
-		}
-		return null;
 	}
 	@Override
 	public Void visitLoopStmt(Stmt.LoopStmt loopStmt) {

@@ -4,6 +4,7 @@
 		Write :noun "Input something:";
 		input = Read;
 		Write :line "You input: " + input;
+		`input;
 	},
 	0
 ]

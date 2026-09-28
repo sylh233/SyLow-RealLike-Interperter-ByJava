@@ -68,20 +68,6 @@ abstract public class Stmt {
 			return visitor.visitBlock(this);
 		}
 	}
-	static class IfStmt extends Stmt{
-		final Expr condition;
-		final Stmt ifstmt;
-		final List<Stmt> elsestmt;
-		public IfStmt(Expr condition,Stmt ifstmt,List<Stmt> elsestmt){
-			this.condition = condition;
-			this.ifstmt = ifstmt;
-			this.elsestmt = elsestmt;
-		}
-		@Override
-		<R> R accept(Visitor<R> visitor) {
-			return visitor.visitIfStmt(this);
-		}
-	}
 	static class LoopStmt extends Stmt{
 		final Block block;
 		public LoopStmt(Block block){
@@ -134,7 +120,6 @@ abstract public class Stmt {
 		R visitDeclareStmt(Stmt.Declare declare);
 		R visitLiteralStmt(Stmt.LiteralStmt literal);
 		R visitBlock(Stmt.Block block);
-		R visitIfStmt(Stmt.IfStmt ifStmt);
 		R visitLoopStmt(Stmt.LoopStmt loopStmt);
 		R visitBreakStmt(Stmt.BreakStmt breakStmt);
 		// R visitContinueStmt(Stmt.ContinueStmt continueStmt);
