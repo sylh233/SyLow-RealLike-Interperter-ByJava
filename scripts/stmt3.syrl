@@ -1,5 +1,5 @@
-SyLow RealLike Demo!
-
+/* SyLow RealLike Demo!
+*/
 =>[
 	$ a = 10,
 	{
@@ -9,7 +9,9 @@ SyLow RealLike Demo!
 			?[b <= 0](<= `"[Write :line \"Hello\",Write :line 233]",null);
 			b = b - 1;
 			`function;
+			/* Write :line "!!!"
+			**/ Write :line "^--"; // ok
 		};
 	},
-	Write "Hello"
+	Write "Hello" // :noun
 ]

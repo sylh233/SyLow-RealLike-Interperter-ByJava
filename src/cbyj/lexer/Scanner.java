@@ -88,6 +88,14 @@ public class Scanner{
 				while (peek()!='\n'&&!isEnd()) {
 					advance();
 				}
+			}else if(match('*')){
+				while (!isEnd()) {
+					if(match('*')){
+						if(match('/')) break;
+					}else{
+						advance();
+					}
+				}
 			}else{
 				addToken(SLASH);
 			}
