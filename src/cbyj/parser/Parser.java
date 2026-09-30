@@ -170,6 +170,7 @@ public class Parser {
 
 	private Expr select(){
 		// ?/# [condition] (list);
+		Token qors = previous();
 		Expr condition = or();
 		Expr list;
 		if(match(STRING)){
@@ -196,7 +197,7 @@ public class Parser {
 		// consume(RIGHT_PAREN, "Expect ')' after Statement Branch!");
 		// consume(SEMI, "Expect ';' after Condition statements!");
 		
-		return new Expr.Select(condition, list);
+		return new Expr.Select(qors, condition, list);
 	}
 
 	private Stmt loopStmt(){
@@ -501,7 +502,7 @@ public class Parser {
 		List<Stmt> block = new ArrayList<>();
 		Expr[] list = {null,new Expr.Statement(new Stmt.BreakStmt(null))};
 		Expr alist = new Expr.aList(list);
-		block.add(new Stmt.Expression(new Expr.Select(condition, alist)));
+		block.add(new Stmt.Expression(new Expr.Select(null, condition, alist)));
 		block.addAll(block());
 		if(increment != null){
 			block.add(new Stmt.Expression(increment));
@@ -520,7 +521,7 @@ public class Parser {
 		// block.add(new Stmt.IfStmt(condition,null,
 		// 						  Arrays.asList(new Stmt.BreakStmt(null))
 		// 						  ));
-		block.add(new Stmt.Expression(new Expr.Select(condition, alist)));
+		block.add(new Stmt.Expression(new Expr.Select(null, condition, alist)));
 		block.addAll(block());
 		return new Stmt.LoopStmt(new Stmt.Block(block));
 	}

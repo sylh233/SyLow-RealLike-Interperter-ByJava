@@ -274,6 +274,11 @@ public class Interpreter implements Expr.Visitor<Object>,
 			}
 		}else if(condition instanceof Integer){
 			index = (Integer)condition;
+			if(index < 0) throw new RuntimeError(select.QorS,
+												 "Index must be large than 0!");
+		}else{
+			throw new RuntimeError(select.QorS,
+			"Expect a Boolean or a Integer as a index after Quote or Sharp!");
 		}
 		
 	    if(select.list instanceof Expr.aList){
@@ -281,19 +286,26 @@ public class Interpreter implements Expr.Visitor<Object>,
 			if(index < list.list.length){
 				Object result = eval(list.list[index]);
 				return result;
+			}else{
+				throw new RuntimeError(select.QorS,"Array out of bounds!");
 			}
 		}else if(select.list instanceof Expr.Literal){
 			String str = stringify(eval(select.list));
 			if(index < str.length()){
 				return str.charAt(index);
+			}else{
+				throw new RuntimeError(select.QorS,"Array(String) out of bounds!");
 			}
 		}else if(select.list instanceof Expr.Variable){
 			Expr.Variable var = (Expr.Variable)select.list;
 			Object object = environment.get(var.name);
 			if(object instanceof Object[]){
 				 Object[] list = (Object[])object;
-				 if(index < list.length)
+				 if(index < list.length){
 					 return list[index];
+				 }else{
+					 throw new RuntimeError(select.QorS,"Array out of bounds!");
+				 }
 			}else
 				return object;
 		}
