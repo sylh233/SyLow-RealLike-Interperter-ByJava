@@ -13,7 +13,7 @@
 	$ c = [b + 999.99];
 	$ msg = "Hello World!";
 	?[c == b](Write :line msg,Write :line "No");
-	#1(<= 0,<= 1);
+	?1(<= 0,<= 1);
 	},
 	0
 ]

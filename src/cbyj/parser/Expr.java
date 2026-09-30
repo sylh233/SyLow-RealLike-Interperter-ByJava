@@ -128,11 +128,11 @@ abstract public class Expr {
 	// 	}
 	// }
 	static class Select extends Expr{
-		final Token QorS;
+		final Token ques;
 		final Expr condition;
 		final Expr list;
-		public Select(Token QorS,Expr condition,Expr list){
-			this.QorS = QorS;
+		public Select(Token ques,Expr condition,Expr list){
+			this.ques = ques;
 			this.condition = condition;
 			this.list = list;
 		}

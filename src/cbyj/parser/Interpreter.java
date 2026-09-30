@@ -12,7 +12,12 @@ import static cbyj.parser.Stmt.Write;
 
 public class Interpreter implements Expr.Visitor<Object>,
 									Stmt.Visitor<Object>{
-	private Environment environment = new Environment();
+	final private Environment globals = new Environment();
+	private Environment environment = globals;
+
+	public Interpreter(){
+	    
+	}
 	
 	// public void interpert(List<Stmt> statements){
 	// 	try {
@@ -274,10 +279,10 @@ public class Interpreter implements Expr.Visitor<Object>,
 			}
 		}else if(condition instanceof Integer){
 			index = (Integer)condition;
-			if(index < 0) throw new RuntimeError(select.QorS,
+			if(index < 0) throw new RuntimeError(select.ques,
 												 "Index must be large than 0!");
 		}else{
-			throw new RuntimeError(select.QorS,
+			throw new RuntimeError(select.ques,
 			"Expect a Boolean or a Integer as a index after Quote or Sharp!");
 		}
 		
@@ -287,14 +292,14 @@ public class Interpreter implements Expr.Visitor<Object>,
 				Object result = eval(list.list[index]);
 				return result;
 			}else{
-				throw new RuntimeError(select.QorS,"Array out of bounds!");
+				throw new RuntimeError(select.ques,"Array out of bounds!");
 			}
 		}else if(select.list instanceof Expr.Literal){
 			String str = stringify(eval(select.list));
 			if(index < str.length()){
 				return str.charAt(index);
 			}else{
-				throw new RuntimeError(select.QorS,"Array(String) out of bounds!");
+				throw new RuntimeError(select.ques,"Array(String) out of bounds!");
 			}
 		}else if(select.list instanceof Expr.Variable){
 			Expr.Variable var = (Expr.Variable)select.list;
@@ -304,7 +309,7 @@ public class Interpreter implements Expr.Visitor<Object>,
 				 if(index < list.length){
 					 return list[index];
 				 }else{
-					 throw new RuntimeError(select.QorS,"Array out of bounds!");
+					 throw new RuntimeError(select.ques,"Array out of bounds!");
 				 }
 			}else
 				return object;

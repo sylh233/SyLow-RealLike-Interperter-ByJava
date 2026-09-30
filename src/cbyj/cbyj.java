@@ -108,9 +108,9 @@ public class cbyj {
 
 	public static void throwError(Token token,String message){
 		if (token.type == TokenType.EOF) {
-			report(token.cLine, "at end", message);
+			report(token.cLine, "at end ", message);
 		}else{
-			report(token.cLine, "at '"+token.lexeme+"'", message);
+			report(token.cLine, "at '"+token.lexeme+"' ", message);
 		}
 	}
 	

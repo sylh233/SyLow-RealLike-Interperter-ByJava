@@ -20,12 +20,13 @@ public enum TokenType{
 	GRAVE,						// `
 	HAT,						// ^
 	DOLAR,						// $
+	QUES,						// ?
+	PERCN,						// %
 
 	// expression
 	EXPR_BEGIN,EXPR_END,		// [,]
 	PLUS,MINUS,					// +,-
 	GREATER,LESS,				// >,<
-	QUES,						// ?
 	BANG,						// !
 	DEQUAL,						// ==
 	NEQUAL,						// !=
@@ -36,8 +37,8 @@ public enum TokenType{
 	IDENTIFIER,
 	STRING,
 	// STMT,						// `...`
-	F32,F64,
-	I32,U32,
+	F64,// F32,
+	I32,// U32,
 	C8,
 
 	// keywords

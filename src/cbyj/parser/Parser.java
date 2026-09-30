@@ -9,9 +9,8 @@ import cbyj.lexer.*;
 import static cbyj.parser.Stmt.Write;
 
 public class Parser {
-	private static class ParseError extends RuntimeException{
-		
-	}
+	private static class ParseError extends RuntimeException{}
+	
 	private final List<Token> tokens;
 	private int current = 0;
 
@@ -130,7 +129,7 @@ public class Parser {
 		Token name = consume(IDENTIFIER, "Expect a variable name!");
 		Expr initializer = null;
 		Expr length = null;
-		if(match(SHARP)){
+		if(match(QUES)){
 			length = or();		// 防止识别后面的等号
 		}
 		if(match(EQUAL)){
@@ -169,7 +168,7 @@ public class Parser {
 	}
 
 	private Expr select(){
-		// ?/# [condition] (list);
+		// ? [condition] (list);
 		Token qors = previous();
 		Expr condition = or();
 		Expr list;
@@ -407,7 +406,7 @@ public class Parser {
 		if(match(IDENTIFIER)){
 			return new Expr.Variable(previous());
 		}
-		if(match(SHARP,QUES)) return select();
+		if(match(QUES)) return select();
 
 		for (TokenType tokenType : BinaryType) {
 			if(match(tokenType)){

@@ -4,7 +4,7 @@
 	$ a = 10,
 	{
 		$ b = a;
-		$ function = "Write :line # [9 - b] \"HelloWorld\"";
+		$ function = "Write :line ? [9 - b] \"HelloWorld\"";
 		@{
 			?[b <= 0](<= `"[Write :line \"Hello\",Write :line 233]",null);
 			b = b - 1;

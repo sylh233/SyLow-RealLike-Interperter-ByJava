@@ -131,6 +131,9 @@ public class Scanner{
 		case '$':
 			addToken(DOLAR);
 			break;
+		case '%':
+			addToken(PERCN);
+			break;
 		case ' ':
 		case '\r':
 		case '\t':
