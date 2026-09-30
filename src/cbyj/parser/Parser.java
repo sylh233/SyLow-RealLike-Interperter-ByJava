@@ -407,6 +407,7 @@ public class Parser {
 			return new Expr.Variable(previous());
 		}
 		if(match(QUES)) return select();
+		if(match(SHARP)) return callable();
 
 		for (TokenType tokenType : BinaryType) {
 			if(match(tokenType)){
@@ -420,9 +421,8 @@ public class Parser {
 
 	private Expr alist(){
 		List<Expr> array = new ArrayList<>();
-		array.add(expr());
 		while(match(COMMA)){
-			array.add(expr());
+			array.add(expr());	// 现在支持长度为0以适配函数参数列表
 		}
 		consume(RIGHT_PAREN, "Expect ')' for the end of list!");
 		return new Expr.aList(array.toArray(new Expr[array.size()]));
@@ -433,6 +433,14 @@ public class Parser {
 	// 	Expr expr = expr();
 	// 	return new Expr.ListItem(expr, index);
 	// }
+
+	private Expr callable(){
+		Token sharp = previous();
+		Expr callee = expr();
+		Expr argu = expr();
+
+		return new Expr.CallableExpr(sharp, callee, argu);
+	}
 
 	private Token consume(TokenType type,String msg){
 		if (check(type)) return advance();

@@ -4,11 +4,13 @@ import static cbyj.lexer.TokenType.*;
 import cbyj.cbyj;
 import cbyj.lexer.*;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import static cbyj.parser.Stmt.Write;
+import cbyj.func.*;
 
 public class Interpreter implements Expr.Visitor<Object>,
 									Stmt.Visitor<Object>{
@@ -16,7 +18,21 @@ public class Interpreter implements Expr.Visitor<Object>,
 	private Environment environment = globals;
 
 	public Interpreter(){
-	    
+		globals.define("clock", new Callable() {
+				@Override
+				public int arity() {return 0;}
+
+				@Override
+				public Object call(Interpreter interpreter,
+								   List<Object> arguments){
+					return (double)System.currentTimeMillis() / 1000.0;
+				}
+
+				@Override
+				public String toString(){
+					return "<native func:clock>";
+				}
+			});
 	}
 	
 	// public void interpert(List<Stmt> statements){
@@ -292,14 +308,17 @@ public class Interpreter implements Expr.Visitor<Object>,
 				Object result = eval(list.list[index]);
 				return result;
 			}else{
-				throw new RuntimeError(select.ques,"Array out of bounds!");
+				throw new RuntimeError(select.ques,"Array out of bounds("
+									   + list.list.length + ")!");
 			}
 		}else if(select.list instanceof Expr.Literal){
 			String str = stringify(eval(select.list));
 			if(index < str.length()){
 				return str.charAt(index);
 			}else{
-				throw new RuntimeError(select.ques,"Array(String) out of bounds!");
+				throw new RuntimeError(select.ques,
+									   "Array(String) out of bounds("
+									   + str.length() + ")!");
 			}
 		}else if(select.list instanceof Expr.Variable){
 			Expr.Variable var = (Expr.Variable)select.list;
@@ -309,7 +328,8 @@ public class Interpreter implements Expr.Visitor<Object>,
 				 if(index < list.length){
 					 return list[index];
 				 }else{
-					 throw new RuntimeError(select.ques,"Array out of bounds!");
+					 throw new RuntimeError(select.ques,"Array out of bounds("
+											+ list.length + ")!");
 				 }
 			}else
 				return object;
@@ -332,6 +352,46 @@ public class Interpreter implements Expr.Visitor<Object>,
 		// 	}
 		// }
 		return null;
+	}
+	@Override
+	public Object visitCallableExpr(Expr.CallableExpr callableExpr){
+		Object callee = eval(callableExpr.callee);
+		if(!(callee instanceof Callable)){
+			throw new RuntimeError(callableExpr.sharp,
+								   "This isn't Callable!");
+		}
+
+		List<Object> argu;
+		
+		if(callableExpr.argu instanceof Expr.aList) {
+			Expr.aList list = (Expr.aList)(callableExpr.argu);
+			Object[] list2 = (Object[])list.accept(this);
+			argu = Arrays.asList(list2);
+		}else if(callableExpr.argu instanceof Expr.Variable){
+			Expr.Variable var = (Expr.Variable)(callableExpr.argu);
+			Object list = environment.get(var.name);
+			Object[] list2;
+			if(list instanceof Object[]){
+				list2 = (Object[])list;
+			}else{
+				throw new RuntimeError(callableExpr.sharp,
+									   "This Varibale isn't an array!");
+			}
+			argu = Arrays.asList(list2);
+		}else{
+			throw new RuntimeError(callableExpr.sharp,
+									   "Expect valid arguments after callee!");
+		}
+
+		Callable function = (Callable)callee;
+
+		if(function.arity() != argu.size()){
+			throw new RuntimeError(callableExpr.sharp,"Expect " +
+								   function.arity() + " arguments " +
+								   "rather than " + argu.size() + "!");
+		}
+		
+	    return function.call(this, argu);
 	}
 	
 	// Stmt

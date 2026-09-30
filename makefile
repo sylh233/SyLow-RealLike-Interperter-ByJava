@@ -2,8 +2,8 @@ run: build
 	java -cp out cbyj.cbyj
 # -cp :classpath; package cbyj: out/cbyj/cbyj.class
 # java用"."作为路径
-build: src/cbyj/*.java src/cbyj/lexer/*.java src/cbyj/parser/*.java
-	javac -d out src/cbyj/*.java src/cbyj/lexer/*.java src/cbyj/parser/*.java
+build: src/cbyj/*.java src/cbyj/lexer/*.java src/cbyj/parser/*.java src/cbyj/func/*.java
+	javac -d out src/cbyj/*.java src/cbyj/lexer/*.java src/cbyj/parser/*.java src/cbyj/func/*.java
 # -d: class放到的地方，会按package作为文件夹，放到out/里面
 # javac则是用"/"
 # javac只识别包的名称

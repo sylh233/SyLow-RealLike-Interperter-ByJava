@@ -188,27 +188,18 @@ Value: "Finish!"
 
 ## 表达式和运算符
 表达式分为：
-```
-一元运算(! 逻辑否,- 负号)、
+- 一元运算(! 逻辑否,- 负号)、
+- 二元运算(+-*/ 四则运算,> < >= <= 比较,== != 判等)、
+- 表达式组([...])、
+- 字面量(123 'a'(97) 整数,1.5 浮点数,"Hello" "Write \"Hello\" " 字符串)、
+- 变量(SyRL是动态类型的)、
+- 赋值(a = b)、
+- 逻辑(and or)、
+- 数组( (1,"Hello",Write 233) )、
+- 选择(? index (1,2,3))、
+- 和语句（语句表达式）
+- 以及函数调用(*添加于0.3.0* # function arguments)
 
-二元运算(+-*/ 四则运算,> < >= <= 比较,== != 判等)、
-
-表达式组([...])、
-
-字面量(123 'a'(97) 整数,1.5 浮点数,"Hello" "Write \"Hello\" " 字符串)、
-
-变量(SyRL是动态类型的)、
-
-赋值(a = b)、
-
-逻辑(and or)、
-
-数组( (1,"Hello",Write 233) )、
-
-选择(? index (1,2,3))、
-
-和语句（语句表达式）
-```
 下面简单说一下字符串中的转义字符和选择表达式
 ### 转义
 目前只支持4种转义
@@ -291,4 +282,25 @@ return "Expression" // <= "Expression"
 /*
 	多行注释
 */
+```
+
+## 函数
+### 函数调用
+由调用符号'#'后接函数名，再后接一个参数数组组成
+```
+# function (argument1,argument2,...,argumentN) // 字面数组调用
+
+$ arguments = (argument1,argument2,...,argumentN),
+# function arguments // 数组变量调用
+```
+
+### 原生函数(Native Function)
+
+参考*Crafting Interpreters by Robert Nystrom*，实现了原生函数"clock"，用于查看当前时间戳
+```
+// 两种调用方法
+# clock ()
+
+$ a = ()
+# clock a
 ```

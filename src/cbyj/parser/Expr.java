@@ -141,6 +141,20 @@ abstract public class Expr {
 			return visitor.visitSelect(this);
 		}
 	}
+	static class CallableExpr extends Expr{
+		final Token sharp;
+		final Expr callee;
+		final Expr argu;
+		public CallableExpr(Token sharp,Expr callee,Expr argu){
+			this.sharp = sharp;
+			this.callee = callee;
+			this.argu = argu;
+		}
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitCallableExpr(this);
+		}
+	}
 	public interface Visitor<R> {
 		R visitBinary(Expr.Binary binary);
 		R visitGrouping(Expr.Grouping grouping);
@@ -153,5 +167,6 @@ abstract public class Expr {
 		R visitAList(Expr.aList aList);
 		// R visitListItem(Expr.ListItem listItem);
 		R visitSelect(Expr.Select select);
+		R visitCallableExpr(Expr.CallableExpr callableExpr);
 	}
 }
