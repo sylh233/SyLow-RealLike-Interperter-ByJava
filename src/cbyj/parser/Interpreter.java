@@ -71,14 +71,17 @@ public class Interpreter implements Expr.Visitor<Object>,
 	public Object interpert_noStruct(List<Expr> exprs){
 		Object result = null;
 		try {
-			for (Expr expr : exprs) {
-			    result = eval(expr);
+			try {
+				for (Expr expr : exprs) {
+					result = eval(expr);
+				}
+			} catch (ReturnException exception) {
+			    result = exception.value;
 			}
-			return result;
 		} catch (RuntimeError error) {
 			cbyj.runtimeError(error);
-			return null;
 		}
+		return result;
 	}
 	
 	static public String stringify(Object object){
@@ -184,6 +187,7 @@ public class Interpreter implements Expr.Visitor<Object>,
 			}
 		} catch (ReturnException e) {
 		    value = e.value;
+			// System.out.println("<= " + value);
 		} finally {
 			this.environment = previous;
 		}

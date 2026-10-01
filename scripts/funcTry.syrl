@@ -11,11 +11,37 @@
 	{
 		$ fun1 = # (n) [{
 		  Write :line n;
-		  ? [n <= 0] (<= 0,0);
-		  # fun1 (n - 1);
+		  ? [n <= 0] (<= "end!",<= # fun1 (n-1));
 		}];
 		Write :line # fun1 (10);
 	},
-	# b2 (),
+	$ b3 = # ()
+	{
+		$ fun2 = # (n) [{
+		  ? [n > 1] (# fun2 (n-1),0);
+		  Write :line n;
+		  <= n;
+		}];
+		# fun2 (10);
+	},
+	$ b4 = # ()
+	{
+		$ fun3 = # (n) {
+		  Write :line n;
+		  ? [n <= 0] (<= "e",0);
+		  # fun3 (n - 1);
+		};
+		Write [# fun3 (10)];
+	},
+	$ b22 = # ()
+	{
+		$ fun = # (n) [{
+		  Write :line n;
+		  ? [n <= 0] (<= "e",0);
+		  # fun (n - 1);
+		}];
+		Write :line # fun (0);
+	},
+	# b3 (),
 	0
 ]
