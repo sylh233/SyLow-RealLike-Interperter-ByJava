@@ -155,6 +155,18 @@ abstract public class Expr {
 			return visitor.visitCallableExpr(this);
 		}
 	}
+	public static class FunctionDecl extends Expr{
+		public final List<Token> parameters;
+		public final Expr body;
+		public FunctionDecl(List<Token> para,Expr body){
+			this.parameters = para;
+			this.body = body;
+		}
+	    @Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitFuncDecl(this);
+		}
+	}
 	public interface Visitor<R> {
 		R visitBinary(Expr.Binary binary);
 		R visitGrouping(Expr.Grouping grouping);
@@ -168,5 +180,6 @@ abstract public class Expr {
 		// R visitListItem(Expr.ListItem listItem);
 		R visitSelect(Expr.Select select);
 		R visitCallableExpr(Expr.CallableExpr callableExpr);
+		R visitFuncDecl(Expr.FunctionDecl functionDecl);
 	}
 }

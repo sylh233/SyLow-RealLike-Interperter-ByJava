@@ -114,6 +114,7 @@ abstract public class Stmt {
 			return visitor.visitReadStmt(this);
 		}
 	}
+	
 	public interface Visitor<R> {
 		R visitWriteStmt(Stmt.Write write);
 		R visitExprStmt(Stmt.Expression expression);

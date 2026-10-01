@@ -1,12 +1,33 @@
 # 使用方法（Usage）
 
+以下指令皆在makefile所在目录下执行
+
 ## REPL模式（REPL Mode）
+
+### 使用make
 在makefile所在目录内执行
 ```shell
 make
 ```
+或
+```
+make run
+```
+
+### 直接执行
+可以先用make进行编译
+```
+make build
+```
+或是直接用javac自行编译，源码全部在src/目录下（详情可见makefile）
+
+然后用java执行
+```
+java -cp out cbyj.cbyj
+```
 
 ## FILE模式（FILE Mode）
+### 使用make
 ```shell
 make runfile FILE="[filename]"
 ```
@@ -17,6 +38,11 @@ filename的父目录是scripts文件夹
 runfile: build scripts/$(FILE)
 	java -cp out cbyj.cbyj scripts/$(FILE)
 	#					   ^^^^^^^^ Here
+```
+
+### 直接执行
+```
+java -cp out cbyj.cbyj scripts/[filename]
 ```
 
 # 基础语法简介（Basic Syntax Brief）
@@ -52,7 +78,7 @@ Start的内容是控制台输出（stdout），即使用Write语句；
 
 Value是表达式的值
 
-## 表达式组与返回语句
+## 主程序结构：表达式组与返回语句
 ```
 ["Expression","Expression",...,"Expression"]
 ```
@@ -186,6 +212,30 @@ b = 10
 Value: "Finish!"
 ```
 
+## 基础值类型
+- 整数与字符
+```
+233, 'a' // 233, 97 字符会直接转化成整数
+```
+- 浮点数
+```
+233.333, 1.0
+```
+- 字符串
+```
+"Hello", "a"
+```
+- 布尔值
+```
+true, True
+false, False
+```
+- NULL
+```
+null, NULL
+```
+
+另外还有两种特殊类型——数组和函数，将在后面提到
 
 ## 表达式和运算符
 表达式分为：
@@ -302,7 +352,8 @@ return "Expression" // <= "Expression"
 
 ## 函数
 ### 函数调用
-由调用符号'#'后接函数名，再后接一个参数数组组成
+由调用符号'#'后接函数名，再后接一个实参数组组成
+(其实大部分语言中的函数调用本不必使用什么特殊符号，如这里的'#'，他们只需要识别一个标识符后面的括号，就知道这是个函数。但是我们支持一种以数组型变量为实参的调用方法，只识别括号就显得不太够用了。为了实现简单，所以采取了特殊符号来调用函数的方式。)
 ```
 # function (argument1,argument2,...,argumentN) // 字面数组调用
 
@@ -315,8 +366,43 @@ $ arguments = (argument1,argument2,...,argumentN),
 参考*Crafting Interpreters by Robert Nystrom*，实现了原生函数"clock"，用于查看当前时间戳
 ```
 // 两种调用方法
-# clock ()
+# clock () // 返回字符串 "HH:mm:ss yyyy/MM/dd"
 
 $ a = (),
 # clock a
 ```
+
+### 定义函数
+SyRL的函数都是匿名函数，因此定义函数即声明一个值为匿名函数的变量：
+```
+$ function = # (parameter1,...,parameterN) Expression(Body)
+```
+匿名函数的语法为：
+```
+# (parameter1,...,parameterN) Expression(Body)
+```
+和函数调用的arguments不同的是，parameters必须是一个项为只能标识符的"数组"(只是看起来像字面的数组，但其实只是用'('和')'包裹，用','分隔的一串标识符（Identifier），并不是真正意义上的数组。另外如果这里的形参不是标识符，则会报一个解析期错误而不是运行时错误。这也能说明他跟通常的数组在解析上有本质的不同。)，而不能是变量
+
+匿名函数也可以直接调用，但是显得有点奇怪：
+```
+# # () Expression () // 其实就等于 Expression
+# [# () Expression] () // 结构更清晰的写法
+```
+
+### 函数的作用域
+函数有自己的作用域。
+
+即使函数体为一个没有作用域的表达式，而不是表达式组和语句块这种自带作用域的表达式，但它还是在函数的作用域里。
+
+函数的作用域情况如下：
+```
+{ 函数被调用的作用域 E
+	{ 函数自己的作用域（形参被声明的作用域） P
+		{ （如果有）作为函数体的表达式组或语句块的作用域 B
+		
+		}
+	}
+}
+```
+
+

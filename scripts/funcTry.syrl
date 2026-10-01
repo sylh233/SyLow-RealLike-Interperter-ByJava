@@ -1,0 +1,21 @@
+=>[
+	$ b1 = # ()
+	{
+		$ add = # (a,b) [a + b];
+		$ a = 10;
+		$ b = 233;
+		Write a + " + " + b + " = ";
+		Write :line # add (a,b);
+	},
+	$ b2 = # ()
+	{
+		$ fun1 = # (n) [{
+		  Write :line n;
+		  ? [n <= 0] (<= 0,0);
+		  # fun1 (n - 1);
+		}];
+		Write :line # fun1 (10);
+	},
+	# b2 (),
+	0
+]

@@ -290,11 +290,16 @@ public class Scanner{
 		keywords = new HashMap<>();
 		keywords.put("Super", SUPER);
 		keywords.put("Origin", ORG);
+		
 		keywords.put("true", TRUE);
 		keywords.put("false", FALSE);
+		keywords.put("True", TRUE);
+		keywords.put("False", FALSE);
+		keywords.put("null", NULL);
+		keywords.put("NULL", NULL);
+		
 		keywords.put("Write", WRITE);
 		keywords.put("Read", READ);
-		keywords.put("null", NULL);
 
 		keywords.put("while", S_WHILE);
 		keywords.put("for", S_FOR);

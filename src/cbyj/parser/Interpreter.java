@@ -3,21 +3,28 @@ package cbyj.parser;
 import static cbyj.lexer.TokenType.*;
 import cbyj.cbyj;
 import cbyj.lexer.*;
+import static cbyj.parser.Stmt.Write;
+import cbyj.func.*;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import static cbyj.parser.Stmt.Write;
-import cbyj.func.*;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 
 public class Interpreter implements Expr.Visitor<Object>,
 									Stmt.Visitor<Object>{
-	final private Environment globals = new Environment();
-	private Environment environment = globals;
+	final public Environment globals = new Environment();
+	public Environment environment = globals;
 
 	public Interpreter(){
+		native_func();
+	}
+
+	private void native_func(){
 		globals.define("clock", new Callable() {
 				@Override
 				public int arity() {return 0;}
@@ -25,7 +32,13 @@ public class Interpreter implements Expr.Visitor<Object>,
 				@Override
 				public Object call(Interpreter interpreter,
 								   List<Object> arguments){
-					return (double)System.currentTimeMillis() / 1000.0;
+					long ts = System.currentTimeMillis();
+					DateTimeFormatter formatter = DateTimeFormatter
+						.ofPattern("HH:mm:ss yyyy/MM/dd")
+						.withZone(ZoneId.systemDefault());
+					String time = formatter
+						.format(Instant.ofEpochMilli(ts));
+						return time;
 				}
 
 				@Override
@@ -75,7 +88,14 @@ public class Interpreter implements Expr.Visitor<Object>,
 		}
 		return object.toString();
 	}
-	private Object eval(Expr expr){
+	
+	static public String stringify_withquote(Object object){
+		if (object instanceof String) {
+			return "\"" + object + "\"";
+		}else return stringify(object);
+	}
+	
+	public Object eval(Expr expr){
 		if(expr != null) return expr.accept(this);
 		return null;
 	}
@@ -393,6 +413,11 @@ public class Interpreter implements Expr.Visitor<Object>,
 		
 	    return function.call(this, argu);
 	}
+	@Override
+	public Callable visitFuncDecl(Expr.FunctionDecl functionDecl) {
+		Function function = new Function(functionDecl);
+	    return function;
+	}
 	
 	// Stmt
 	@Override
@@ -423,7 +448,8 @@ public class Interpreter implements Expr.Visitor<Object>,
 		if(declare.length == null){
 			value = eval(declare.initializer);
 			environment.define(declare.name.lexeme, value);
-			return "$ " + declare.name.lexeme + " = " + stringify(value);
+			return "$ " + declare.name.lexeme + " = "
+				+ stringify_withquote(value);
 		}else{
 			int length = (Integer)eval(declare.length);
 			Object[] list = new Object[length];

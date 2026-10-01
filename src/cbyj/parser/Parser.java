@@ -126,7 +126,11 @@ public class Parser {
 	}
 
 	private Stmt declStmt(){
+		// $ var [? length] [= initializer]
 		Token name = consume(IDENTIFIER, "Expect a variable name!");
+
+		// if(match(SHARP)) return funcDecl(name); // 定义函数
+		
 		Expr initializer = null;
 		Expr length = null;
 		if(match(QUES)){
@@ -137,6 +141,14 @@ public class Parser {
 		}
 		// consume(SEMI, "Expect ';' after variable declaration!");
 		return new Stmt.Declare(name, initializer, length);
+	}
+
+	private Expr funcDecl(){
+		// # parameters [] or {} or expr(stmt)
+	    List<Token> paras = parameters(255);
+		Expr body = expr();
+		
+		return new Expr.FunctionDecl(paras, body);
 	}
 
 	private Stmt literalStmt(){
@@ -256,7 +268,7 @@ public class Parser {
 			// 						   ((Expr.ListItem)expr).index, value);
 			// }
 
-			error(equal, "Invalid Assignment Target!");
+			throw error(equal, "Invalid Assignment Target!");
 		}
 
 		return expr;
@@ -407,7 +419,14 @@ public class Parser {
 			return new Expr.Variable(previous());
 		}
 		if(match(QUES)) return select();
-		if(match(SHARP)) return callable();
+		if(match(SHARP)) {
+			if(match(LEFT_PAREN)) {
+				return funcDecl();
+			}
+			else{
+				return callable();
+			}
+		}
 
 		for (TokenType tokenType : BinaryType) {
 			if(match(tokenType)){
@@ -420,12 +439,41 @@ public class Parser {
 	}
 
 	private Expr alist(){
+	    return alist(null);
+	}
+
+	private Expr alist(Integer max){
 		List<Expr> array = new ArrayList<>();
-		while(match(COMMA)){
-			array.add(expr());	// 现在支持长度为0以适配函数参数列表
+		if(peek().type == RIGHT_PAREN){
+			advance();			// 现在支持长度为0以适配函数参数列表
+		}else{
+			do{
+				array.add(expr());
+				if(max != null && array.size() > max){
+					error(peek(), "The array can't have more than "
+						  + max.toString() + " items!");
+				}
+			}while(match(COMMA));
+			consume(RIGHT_PAREN, "Expect ')' for the end of list!");
 		}
-		consume(RIGHT_PAREN, "Expect ')' for the end of list!");
 		return new Expr.aList(array.toArray(new Expr[array.size()]));
+	}
+
+	private List<Token> parameters(Integer max){
+		List<Token> paras = new ArrayList<>();
+		if(peek().type == RIGHT_PAREN){
+			advance();
+		}else{
+			do{
+				paras.add(consume(IDENTIFIER, "Expect a parameter name!"));
+				if(max != null && paras.size() > max){
+					error(peek(), "Parameters can't have more than "
+						  + max.toString() + " items!");
+				}
+			}while(match(COMMA));
+			consume(RIGHT_PAREN, "Expect ')' for the end of parameters!");
+		}
+		return paras;
 	}
 
 	// private Expr listItem(){

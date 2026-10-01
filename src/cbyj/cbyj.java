@@ -57,13 +57,8 @@ public class cbyj {
 	}
 
 	private static void printValue(Object value){
-		String valueStr = "";
-		if(value instanceof String){
-			valueStr = "\"" + (String)value + "\"";
-			System.out.println("Value: " + valueStr);
-		}else{
-			System.out.println("Value: " + value);
-		}
+		System.out.println("\nValue: "
+						   + Interpreter.stringify_withquote(value));
 	}
 
 	private static Object run(String bytes) throws IOException{
