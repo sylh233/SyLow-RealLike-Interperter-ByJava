@@ -325,7 +325,7 @@ public class Scanner{
 	// 	addToken(STMT, literal);
 	// }
 	private void a_char(){
-		addToken(C8, (int)advance());
+		addToken(C16, (char)advance());
 		if(peek() == '\''){
 			advance();
 		}else{

@@ -7,6 +7,8 @@ import static cbyj.lexer.TokenType.*;
 import cbyj.cbyj;
 import cbyj.lexer.*;
 import static cbyj.parser.Stmt.Write;
+import java.util.Map;
+import java.util.HashMap;
 
 public class Parser {
 	private static class ParseError extends RuntimeException{}
@@ -189,7 +191,7 @@ public class Parser {
 		}else if(match(IDENTIFIER)){
 			list = new Expr.Variable(previous());
 		}else if(match(LEFT_PAREN)){
-			list = alist();
+			list = arrayExpr();
 		}else{
 			list = expr();
 		}
@@ -393,7 +395,7 @@ public class Parser {
 	private Expr primary(){
 		if(match(FALSE)) return new Expr.Literal(false);
 		if(match(TRUE)) return new Expr.Literal(true);
-		if(match(I32,F64,STRING,C8)){
+		if(match(I32,F64,STRING,C16)){
 			return new Expr.Literal(previous().literal);
 		}
 		if(match(NULL)){
@@ -414,7 +416,7 @@ public class Parser {
 			consume(EXPR_END,"");
 			return new Expr.Grouping(exprs);
 		}
-		if(match(LEFT_PAREN)) return alist();
+		if(match(LEFT_PAREN)) return arrayExpr();
 		if(match(IDENTIFIER)){
 			return new Expr.Variable(previous());
 		}
@@ -438,25 +440,37 @@ public class Parser {
 		throw error(peek(), "Unexpected expression!");
 	}
 
-	private Expr alist(){
-	    return alist(null);
+	private Expr arrayExpr(){
+	    return arrayExpr(null);
 	}
 
-	private Expr alist(Integer max){
+	private Expr arrayExpr(Integer max){
 		List<Expr> array = new ArrayList<>();
+		Map<Expr,Integer> index_map = new HashMap<>();
+		Integer index = 0;
 		if(peek().type == RIGHT_PAREN){
 			advance();			// 现在支持长度为0以适配函数参数列表
 		}else{
 			do{
-				array.add(expr());
+				Expr expr = expr();
+				if(match(COLON)){
+				    array.add(expr());
+					index_map.put(expr, index);
+				}else{
+					array.add(expr);
+				}
+				
 				if(max != null && array.size() > max){
 					error(peek(), "The array can't have more than "
 						  + max.toString() + " items!");
 				}
+
+				index++;
 			}while(match(COMMA));
 			consume(RIGHT_PAREN, "Expect ')' for the end of list!");
 		}
-		return new Expr.aList(array.toArray(new Expr[array.size()]));
+		return new Expr.ArrayExpr(array.toArray(new Expr[array.size()]),
+								  index_map);
 	}
 
 	private List<Token> parameters(Integer max){
@@ -556,7 +570,7 @@ public class Parser {
 		}
 		List<Stmt> block = new ArrayList<>();
 		Expr[] list = {null,new Expr.Statement(new Stmt.BreakStmt(null))};
-		Expr alist = new Expr.aList(list);
+		Expr alist = new Expr.ArrayExpr(list,null);
 		block.add(new Stmt.Expression(new Expr.Select(null, condition, alist)));
 		block.addAll(block());
 		if(increment != null){
@@ -572,7 +586,7 @@ public class Parser {
 		consume(LEFT_BRACE, "Expect a Block('{','}') after while-loop!");
 		List<Stmt> block = new ArrayList<>();
 		Expr[] list = {null,new Expr.Statement(new Stmt.BreakStmt(null))};
-		Expr alist = new Expr.aList(list);
+		Expr alist = new Expr.ArrayExpr(list,null);
 		// block.add(new Stmt.IfStmt(condition,null,
 		// 						  Arrays.asList(new Stmt.BreakStmt(null))
 		// 						  ));

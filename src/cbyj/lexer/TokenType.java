@@ -10,7 +10,7 @@ public enum TokenType{
 	SEMI,						// ;
 	SLASH,						// /
 	COMMA,						// ,
-	SHARP,						// #
+	SHARP,						// # HASH
 	AT,							// @
 	CEQUAL,						// :=
 	DOT,						// .
@@ -39,7 +39,7 @@ public enum TokenType{
 	// STMT,						// `...`
 	F64,// F32,
 	I32,// U32,
-	C8,
+	C16,
 
 	// keywords
 	SUPER,ORG,					// Super,Origin
@@ -47,6 +47,7 @@ public enum TokenType{
 	READ,						// Read
 	TRUE,FALSE,					// true,false
 	NULL,						// NULL
+	F64T,I32T,C16T,STRT,			// Type
 
 	// Suger
 	S_WHILE,S_FOR,					// while,for

@@ -44,15 +44,15 @@ public class Environment {
 	    throw new RuntimeError(name, "Undefined Variable "+name.lexeme+"!");
 	}
 
-	public void assign(Token name,int index,Object value){
+	public void assign(Token name,Object index,Object value){
 		if (environment.containsKey(name.lexeme)) {
 			Object list = environment.get(name.lexeme);
-			if(!(list instanceof Object[])){
-				throw new RuntimeError(name,"The Variable isn't a list!");
+			if(!(list instanceof rl_Array)){
+				throw new RuntimeError(name,"The Variable isn't a Array!");
 			}
-			Object[] list2 = (Object[])list;
-			list2[index] = value;
-			environment.put(name.lexeme,list2);
+			rl_Array array = (rl_Array)list;
+			array.assign(index,value);
+			environment.put(name.lexeme,array);
 			return;
 		}
 

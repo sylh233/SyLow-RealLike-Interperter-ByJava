@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
+import java.util.HashMap;
 
 public class Interpreter implements Expr.Visitor<Object>,
 									Stmt.Visitor<Object>{
@@ -117,17 +119,32 @@ public class Interpreter implements Expr.Visitor<Object>,
 		// case COMMA:
 		// 	return right;
 		case PLUS:
-			if (left instanceof Integer && right instanceof Integer) {
-				return (Integer)left + (Integer)right;
-			} else if (left instanceof Double || right instanceof Double){
-				return ((Number)left).doubleValue() +
-					((Number)right).doubleValue();
-			}else if (left instanceof String && right instanceof String){
-				return (String)left + (String)right;
+			if((left instanceof Number || left instanceof Character)
+			   && (right instanceof Number || right instanceof Character)){
+				left = ifChar2int(left);
+				right = ifChar2int(right);
+				if (left instanceof Integer && right instanceof Integer) {
+					return (Integer)left + (Integer)right;
+				} else if (left instanceof Double || right instanceof Double){
+					return ((Number)left).doubleValue() +
+						((Number)right).doubleValue();
+				}
+			}else{
+				return Interpreter.stringify(left) +
+				Interpreter.stringify(right);
 			}
-			return left.toString() + right.toString();
+			// if (left instanceof Integer && right instanceof Integer) {
+			// 	return (Integer)left + (Integer)right;
+			// } else if (left instanceof Double || right instanceof Double){
+			// 	return ((Number)left).doubleValue() +
+			// 		((Number)right).doubleValue();
+			// }else if (left instanceof String && right instanceof String){
+			// 	return (String)left + (String)right;
+			// }
 		case MINUS:
 			isValidOperand(binary.operator, left, right);
+			left = ifChar2int(left);
+			right = ifChar2int(right);
 			if (left instanceof Integer && right instanceof Integer) {
 				return (Integer)left - (Integer)right;
 			} else if (left instanceof Double || right instanceof Double){
@@ -137,6 +154,8 @@ public class Interpreter implements Expr.Visitor<Object>,
 			break;
 		case STAR:
 			isValidOperand(binary.operator, left, right);
+			left = ifChar2int(left);
+			right = ifChar2int(right);
 			if (left instanceof Integer && right instanceof Integer) {
 				return (Integer)left * (Integer)right;
 			} else if (left instanceof Double || right instanceof Double){
@@ -146,6 +165,8 @@ public class Interpreter implements Expr.Visitor<Object>,
 			break;
 		case SLASH:
 			isValidOperand(binary.operator, left, right);
+			left = ifChar2int(left);
+			right = ifChar2int(right);
 			if (left instanceof Integer && right instanceof Integer) {
 				if((Integer)right == 0 && (Integer)left == 0) return Double.NaN;
 				if((Integer)right == 0) return Double.POSITIVE_INFINITY;
@@ -157,15 +178,23 @@ public class Interpreter implements Expr.Visitor<Object>,
 			break;
 		case GREATER:
 			isValidOperand(binary.operator, left, right);
+			left = ifChar2int(left);
+			right = ifChar2int(right);
 			return ((Number)left).doubleValue() > ((Number)right).doubleValue();
 		case LESS:
 			isValidOperand(binary.operator, left, right);
+			left = ifChar2int(left);
+			right = ifChar2int(right);
 		    return ((Number)left).doubleValue() < ((Number)right).doubleValue();
 		case GEQUAL:
 			isValidOperand(binary.operator, left, right);
+			left = ifChar2int(left);
+			right = ifChar2int(right);
 			return ((Number)left).doubleValue() >= ((Number)right).doubleValue();
 		case RETURN:
 			isValidOperand(binary.operator, left, right);
+			left = ifChar2int(left);
+			right = ifChar2int(right);
 		    return ((Number)left).doubleValue() <= ((Number)right).doubleValue();
 		case DEQUAL:
 			return isEqual(left, right);
@@ -203,6 +232,7 @@ public class Interpreter implements Expr.Visitor<Object>,
 		switch(unary.operator.type) {
 		case MINUS:
 			isValidOperand(unary.operator, value);
+			value = ifChar2int(value);
 			if (value instanceof Integer) {
 				return -(Integer)value;
 			}else if (value instanceof Double){
@@ -242,13 +272,20 @@ public class Interpreter implements Expr.Visitor<Object>,
 		return a.equals(b);
 	}
 	private void isValidOperand(Token operator,Object operand){
-		if (operand instanceof Double || operand instanceof Integer) return;
+		if (operand instanceof Double || operand instanceof Integer
+			|| operand instanceof Character) return;
 		throw new RuntimeError(operator, "Operand must be a Number!");
 	}
 	private void isValidOperand(Token operator,Object left,Object right){
-		if ((left instanceof Double || left instanceof Integer)&&
-			(right instanceof Double || right instanceof Integer)) return;
+		if ((left instanceof Double || left instanceof Integer
+			 || left instanceof Character)&&
+			(right instanceof Double || right instanceof Integer
+			 || right instanceof Character)) return;
 		throw new RuntimeError(operator, "Operand must be a Number!");
+	}
+	private Object ifChar2int(Object object){
+		if(object instanceof Character) return (int)(char)object;
+		return object;
 	}
 	@Override
 	public Object visitVariable(Expr.Variable variable){
@@ -262,7 +299,7 @@ public class Interpreter implements Expr.Visitor<Object>,
 		if(assign.index == null){
 			environment.assign(assign.name, value);
 		}else{
-			int index = (Integer)eval(assign.index);
+			Object index = eval(assign.index);
 			environment.assign(assign.name, index, value);
 		}
 		return value;
@@ -282,8 +319,14 @@ public class Interpreter implements Expr.Visitor<Object>,
 		return exec(statement.stmt);
 	}
 	@Override
-	public Object visitAList(Expr.aList aList){
-		return Arrays.stream(aList.list).map(x -> eval(x)).toArray();
+	public rl_Array visitArray(Expr.ArrayExpr arrayExpr){
+		Object[] array = Arrays.stream(arrayExpr.array)
+			.map(x -> eval(x)).toArray();
+		Map<Object,Integer> index_map = new HashMap<>();
+		arrayExpr.index_map.forEach((k,v) -> {
+				index_map.put(eval(k), v);
+			});
+		return new rl_Array(array, index_map);
 	}
 	// @Override
 	// public Object visitListItem(Expr.ListItem listItem){
@@ -309,35 +352,50 @@ public class Interpreter implements Expr.Visitor<Object>,
 	@Override
 	public Object visitSelect(Expr.Select select) {
 		Object condition = eval(select.condition);
-		int index = 0;
+		Integer index = null;
+		Boolean bool = null;
 		if(condition instanceof Boolean){
-			Boolean b = (Boolean)condition;
-			if(b){
-				index = 0;
-			}else{
-				index = 1;
-			}
-		}else if(condition instanceof Integer){
+			bool = (Boolean)condition;
+		}
+		if(condition instanceof Integer){
 			index = (Integer)condition;
 			if(index < 0) throw new RuntimeError(select.ques,
 												 "Index must be large than 0!");
-		}else{
-			throw new RuntimeError(select.ques,
-			"Expect a Boolean or a Integer as a index after Quote or Sharp!");
-		}
+		}// else{
+		// 	throw new RuntimeError(select.ques,
+		// 	"Expect a Boolean or a Integer as a index after Quote or Sharp!");
+		// }
 		
-	    if(select.list instanceof Expr.aList){
-			Expr.aList list = (Expr.aList)select.list;
-			if(index < list.list.length){
-				Object result = eval(list.list[index]);
-				return result;
+	    if(select.list instanceof Expr.ArrayExpr){
+			Expr.ArrayExpr list = (Expr.ArrayExpr)select.list;
+			Map<Object,Integer> index_map = new HashMap<>();
+			list.index_map.forEach((k,v) -> {
+					index_map.put(eval(k), v);
+				});
+			Integer i  = index_map.get(condition);
+			if (i != null){
+				if(i < list.array.length)
+					return eval(list.array[i]);
+			}else if(index != null){
+				if(index < list.array.length){
+					Object result = eval(list.array[index]);
+					return result;
+				}else{
+					throw new RuntimeError(select.ques,"Array out of bounds("
+										   + list.array.length + ")!");
+				}
+			}else if(bool != null){			    
+				if(list.array.length > 0 && bool){
+					return eval(list.array[0]);
+				}else if(list.array.length > 1 && !bool){
+					return eval(list.array[1]);
+				}
 			}else{
-				throw new RuntimeError(select.ques,"Array out of bounds("
-									   + list.list.length + ")!");
+				
 			}
 		}else if(select.list instanceof Expr.Literal){
 			String str = stringify(eval(select.list));
-			if(index < str.length()){
+			if(index != null && index < str.length()){
 				return str.charAt(index);
 			}else{
 				throw new RuntimeError(select.ques,
@@ -347,14 +405,16 @@ public class Interpreter implements Expr.Visitor<Object>,
 		}else if(select.list instanceof Expr.Variable){
 			Expr.Variable var = (Expr.Variable)select.list;
 			Object object = environment.get(var.name);
-			if(object instanceof Object[]){
-				 Object[] list = (Object[])object;
-				 if(index < list.length){
-					 return list[index];
-				 }else{
-					 throw new RuntimeError(select.ques,"Array out of bounds("
-											+ list.length + ")!");
-				 }
+			if(object instanceof rl_Array){
+				 // Object[] list = (Object[])object;
+				 // if(index < list.length){
+				 // 	 return list[index];
+				 // }else{
+				 // 	 throw new RuntimeError(select.ques,"Array out of bounds("
+				 // 							+ list.length + ")!");
+				 // }
+				rl_Array array = (rl_Array)object;
+				return array.get(condition);
 			}else
 				return object;
 		}
@@ -387,10 +447,10 @@ public class Interpreter implements Expr.Visitor<Object>,
 
 		List<Object> argu;
 		
-		if(callableExpr.argu instanceof Expr.aList) {
-			Expr.aList list = (Expr.aList)(callableExpr.argu);
-			Object[] list2 = (Object[])list.accept(this);
-			argu = Arrays.asList(list2);
+		if(callableExpr.argu instanceof Expr.ArrayExpr) {
+			Expr.ArrayExpr list = (Expr.ArrayExpr)(callableExpr.argu);
+			Object[] array = ((rl_Array)(list.accept(this))).array;
+			argu = Arrays.asList(array);
 		}else if(callableExpr.argu instanceof Expr.Variable){
 			Expr.Variable var = (Expr.Variable)(callableExpr.argu);
 			Object list = environment.get(var.name);
@@ -432,6 +492,7 @@ public class Interpreter implements Expr.Visitor<Object>,
 			System.out.println(stringify(value));
 			break;
 		case Write.Mode.FILE:
+			// 未实现
 			break;
 		case Write.Mode.NOUN:
 		default:
@@ -457,10 +518,12 @@ public class Interpreter implements Expr.Visitor<Object>,
 		}else{
 			int length = (Integer)eval(declare.length);
 			Object[] list = new Object[length];
+			Map<Object,Integer> index_map = null;
 			
 			Object init = eval(declare.initializer);
-			if(init instanceof Object[]){
-				Object[] src = (Object[])init;
+			if(init instanceof rl_Array){
+				rl_Array array = (rl_Array)init;
+				Object[] src = array.array;
 				if(src.length <= length){
 					System.arraycopy(src, 0,
 									 list, 0, src.length);
@@ -469,10 +532,13 @@ public class Interpreter implements Expr.Visitor<Object>,
 					System.arraycopy(src, 0,
 									 list, 0, length);
 				}
+				index_map = array.index_map;
 			}else{
 				list[0] = init;
 			}
-			environment.define(declare.name.lexeme, (Object)list);
+			
+			rl_Array array = new rl_Array(list,index_map);
+			environment.define(declare.name.lexeme, array);
 		}
 		return null;
 	}

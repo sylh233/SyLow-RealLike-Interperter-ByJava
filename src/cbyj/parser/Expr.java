@@ -2,6 +2,8 @@ package cbyj.parser;
 
 import java.util.List;
 import cbyj.lexer.*;
+import java.util.Map;
+import java.util.HashMap;
 
 abstract public class Expr {
 	abstract <R> R accept(Visitor<R> visitor);
@@ -105,14 +107,16 @@ abstract public class Expr {
 			return visitor.visitStatement(this);
 		}
 	}
-	static class aList extends Expr{
-		final Expr[] list;
-		aList(Expr[] list){
-			this.list = list;
+	static class ArrayExpr extends Expr{
+	    final Expr[] array;
+		final Map<Expr,Integer> index_map;
+		ArrayExpr(Expr[] array,Map<Expr,Integer> index_map){
+			this.array = array;
+			this.index_map = index_map;
 		}
 		@Override
 		<R> R accept(Visitor<R> visitor){
-			return visitor.visitAList(this);
+			return visitor.visitArray(this);
 		}
 	}
 	// static class ListItem extends Expr{
@@ -176,7 +180,7 @@ abstract public class Expr {
 		R visitAssign(Expr.Assign assign);
 		R visitLogical(Expr.Logical logical);
 		R visitStatement(Expr.Statement statement);
-		R visitAList(Expr.aList aList);
+		R visitArray(Expr.ArrayExpr arrayExpr);
 		// R visitListItem(Expr.ListItem listItem);
 		R visitSelect(Expr.Select select);
 		R visitCallableExpr(Expr.CallableExpr callableExpr);

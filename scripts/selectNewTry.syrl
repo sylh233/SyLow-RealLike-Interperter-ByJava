@@ -1,0 +1,15 @@
+=>[
+	{
+		$ complex = ("real":0,"image":0);
+		Write "Input Real: ";
+		? "real" complex = Read;
+		Write "Input Image: ";
+		? "image" complex = Read;
+		Write :line "The Complex you input:"
+		+ ? "real" complex
+		+ " + "
+		+ ? "image" complex
+		+ "i";
+	},
+	0
+]
