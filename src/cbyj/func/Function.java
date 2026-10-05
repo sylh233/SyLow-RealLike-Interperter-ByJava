@@ -15,10 +15,7 @@ public class Function implements Callable{
 		this.decl = decl;
 		if(decl.closure != null){
 			closure = new HashMap<>();
-			for (Token token: decl.closure) {
-				closure.put(token.lexeme,
-							interpreter.environment.get(token));
-			}
+			closure_reput(interpreter);
 		}else
 			closure = null;
 	}
@@ -42,20 +39,39 @@ public class Function implements Callable{
 			}
 			
 			if(closure != null)
-				closure.forEach((name, value) -> {
-						interpreter.environment.define(name, value);
-					});
+				closure_put(interpreter);
 			
 			result = interpreter.eval(decl.body);
 		}finally{
+			if(closure != null)
+				closure_reput(interpreter);
 			interpreter.environment = previous;
 		}
 		
 		return result;
 	}
 
+	private void closure_put(Interpreter interpreter){
+		// 将闭包的变量送进环境
+		closure.forEach((name, value) -> {
+				interpreter.environment.define(name, value);
+			});
+	}
+
+	private void closure_reput(Interpreter interpreter){
+		// 将环境封入闭包
+		for (Token token: decl.closure) {
+			if (interpreter.environment.contain(token.lexeme)){
+				closure.put(token.lexeme,
+							interpreter.environment.get(token));
+			}else{
+				closure.put(token.lexeme,null);
+			}
+		}
+	}
+
 	@Override
 	public String toString(){
-		return "<func>";
+		return "<func arity:" + this.arity() + ">";
 	}
 }

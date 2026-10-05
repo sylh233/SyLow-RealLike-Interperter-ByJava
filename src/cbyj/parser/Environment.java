@@ -63,4 +63,16 @@ public class Environment {
 		
 	    throw new RuntimeError(name, "Undefined List "+name.lexeme+"!");
 	}
+
+	public boolean contain(String name){
+		if (environment.containsKey(name)) {
+			return true;
+		}
+		
+		if (enclosing != null){
+			return enclosing.contain(name);
+		}
+
+		return false;
+	}
 }

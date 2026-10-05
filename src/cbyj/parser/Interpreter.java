@@ -473,9 +473,11 @@ public class Interpreter implements Expr.Visitor<Object>,
 	    if(select.list instanceof Expr.ArrayExpr){
 			Expr.ArrayExpr list = (Expr.ArrayExpr)select.list;
 			Map<Object,Integer> index_map = new HashMap<>();
-			list.index_map.forEach((k,v) -> {
-					index_map.put(eval(k), v);
-				});
+			if(list.index_map != null){
+				list.index_map.forEach((k,v) -> {
+						index_map.put(eval(k), v);
+					});
+			}
 			if (index_map.containsKey(condition)){
 				Integer i  = index_map.get(condition);
 				if(i < list.array.length)

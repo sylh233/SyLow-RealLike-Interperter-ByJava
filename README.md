@@ -570,9 +570,46 @@ $ function = # (parameter1,...,parameterN) Expression(Body)
 ```
 $ Closure = # Parameters % Variables Expression
 ```
+若包含未声明的变量，则在其内声明
+
 和Parameters不同，上述"Variables"可以是一个变量，也可以是一个元素均为变量的字面"数组"（'(',')'包裹，','分隔）
 
 闭包变量属于上述作用域P，但在定义在形参声明之后，若名称相同会覆盖形参
+
+闭包变量在函数内长期保存，并且可以保留其修改
+
+例如：
+```
+=>[ // 例子来自 Crafting Interpreters
+	$ makeCounter = # () [
+	  $ a = 0,
+	  $ count = # () % a {
+	  	a = a + 1; // 这里把a封入函数内部，每次执行都会修改其值
+		Write :line a;
+	  },
+	  count
+	],
+	$ counter = # makeCounter (),
+	for ($ i=0;i<10;i = i + 1){
+		# counter ();	
+	},
+	0
+]
+
+Start:
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+
+Value: 0
+```
 
 #### 实参、形参与闭包变量的格式
 

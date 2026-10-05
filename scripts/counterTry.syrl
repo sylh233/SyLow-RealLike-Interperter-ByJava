@@ -1,0 +1,15 @@
+=>[ // 例子来自 Crafting Interpreters
+	$ makeCounter = # () [
+	  $ a = 0,
+	  $ count = # () % a {
+	  	a = a + 1;
+		Write :line a;
+	  },
+	  count
+	],
+	$ counter = # makeCounter (),
+	for ($ i=0;i<10;i = i + 1){
+		# counter ();	
+	},
+	0
+]
