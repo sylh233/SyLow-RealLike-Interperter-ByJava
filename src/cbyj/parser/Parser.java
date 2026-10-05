@@ -148,9 +148,21 @@ public class Parser {
 	private Expr funcDecl(){
 		// # parameters [] or {} or expr(stmt)
 	    List<Token> paras = parameters(255);
+		List<Token> closure = null;
+		if(match(PERCN)){
+		    // consume(LEFT_PAREN, "Expect '(' after '%'!");
+			if(match(LEFT_PAREN))
+				closure = parameters(255);
+			else
+				closure = Arrays.asList(consume(IDENTIFIER,
+						  "Expect Identifier after '%'!"));
+		}
 		Expr body = expr();
 		
-		return new Expr.FunctionDecl(paras, body);
+		if(closure != null){
+			return new Expr.FunctionDecl(paras, body, closure);
+		}else
+			return new Expr.FunctionDecl(paras, body);
 	}
 
 	private Stmt literalStmt(){

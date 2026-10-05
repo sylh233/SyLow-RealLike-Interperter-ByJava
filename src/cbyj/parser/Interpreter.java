@@ -353,15 +353,18 @@ public class Interpreter implements Expr.Visitor<Object>,
 	public Object visitSelect(Expr.Select select) {
 		Object condition = eval(select.condition);
 		Integer index = null;
-		Boolean bool = null;
 		if(condition instanceof Boolean){
-			bool = (Boolean)condition;
+			Boolean bool = (Boolean)condition;
+		    if(bool) index = 0;
+			else index = 1;
+		}else if(condition instanceof Number){
+			index = ((Number)condition).intValue();
+			// if(index < 0) throw new RuntimeError(select.ques,
+			// "Index must be large than 0!");
+		}else if(condition instanceof Character){
+			index = (int)(char)condition;
 		}
-		if(condition instanceof Integer){
-			index = (Integer)condition;
-			if(index < 0) throw new RuntimeError(select.ques,
-												 "Index must be large than 0!");
-		}// else{
+		// else{
 		// 	throw new RuntimeError(select.ques,
 		// 	"Expect a Boolean or a Integer as a index after Quote or Sharp!");
 		// }
@@ -372,36 +375,48 @@ public class Interpreter implements Expr.Visitor<Object>,
 			list.index_map.forEach((k,v) -> {
 					index_map.put(eval(k), v);
 				});
-			Integer i  = index_map.get(condition);
-			if (i != null){
+			if (index_map.containsKey(condition)){
+				Integer i  = index_map.get(condition);
 				if(i < list.array.length)
 					return eval(list.array[i]);
 			}else if(index != null){
+				// index = Math.floorMod(index, list.array.length);
+				if(index < 0){
+					index += list.array.length;
+				}
 				if(index < list.array.length){
 					Object result = eval(list.array[index]);
 					return result;
-				}else{
-					throw new RuntimeError(select.ques,"Array out of bounds("
-										   + list.array.length + ")!");
 				}
-			}else if(bool != null){			    
-				if(list.array.length > 0 && bool){
-					return eval(list.array[0]);
-				}else if(list.array.length > 1 && !bool){
-					return eval(list.array[1]);
-				}
-			}else{
-				
+				// else{
+				// 	throw new RuntimeError(select.ques,"Array out of bounds("
+				// 						   + list.array.length + ")!");
+				// }
 			}
+			// else if(bool != null){			    
+			// 	if(list.array.length > 0 && bool){
+			// 		return eval(list.array[0]);
+			// 	}else if(list.array.length > 1 && !bool){
+			// 		return eval(list.array[1]);
+			// 	}
+			// }else{
+				
+			// }
 		}else if(select.list instanceof Expr.Literal){
 			String str = stringify(eval(select.list));
-			if(index != null && index < str.length()){
-				return str.charAt(index);
-			}else{
-				throw new RuntimeError(select.ques,
-									   "Array(String) out of bounds("
-									   + str.length() + ")!");
+			if(index != null){
+				if(index < 0){
+					index += str.length();
+				}
+				if(index < str.length()){
+					return str.charAt(index);
+				}
 			}
+			// else{
+			// 	throw new RuntimeError(select.ques,
+			// 						   "Array(String) out of bounds("
+			// 						   + str.length() + ")!");
+			// }
 		}else if(select.list instanceof Expr.Variable){
 			Expr.Variable var = (Expr.Variable)select.list;
 			Object object = environment.get(var.name);
@@ -415,8 +430,7 @@ public class Interpreter implements Expr.Visitor<Object>,
 				 // }
 				rl_Array array = (rl_Array)object;
 				return array.get(condition);
-			}else
-				return object;
+			}
 		}
 		// if(condition instanceof Boolean){
 		// 	if((Boolean)condition){
@@ -479,7 +493,7 @@ public class Interpreter implements Expr.Visitor<Object>,
 	}
 	@Override
 	public Callable visitFuncDecl(Expr.FunctionDecl functionDecl) {
-		Function function = new Function(functionDecl);
+		Function function = new Function(functionDecl, this);
 	    return function;
 	}
 	

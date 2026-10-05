@@ -16,7 +16,13 @@ public class rl_Array {
 			return array[index_map.get(index)];
 		}
 		if(index instanceof Integer){
-			return array[(Integer)index];
+			int i = (int)index;
+			if(i < 0){
+				i += array.length;
+			}
+			if(i < array.length){
+				return array[i];
+			}
 		}
 		return null;
 	}
@@ -26,7 +32,13 @@ public class rl_Array {
 			array[index_map.get(index)] = value;
 		}
 		if(index instanceof Integer){
-			array[(Integer)index] = value;
+			int i = (int)index;
+			if(i < 0){
+				i += array.length;
+			}
+			if(i < array.length){
+				array[i] = value;
+			}
 		}
 	}
 

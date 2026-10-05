@@ -1,0 +1,18 @@
+=>[
+	{
+		$ a = 10;
+		$ b = 1;
+		Write :line "a = " + a;
+		Write :line "b = " + b;
+		$ closure = # () % a {
+		  Write :line "a = " + a + " in closure";
+		  Write "b = " + b + " in global";
+		};
+		a = 20;
+		b = 2;
+		Write :line "Now a = " + a;
+		Write :line "Now b = " + b;
+		# closure ();
+	},
+	"Closure Usage Example!"
+]

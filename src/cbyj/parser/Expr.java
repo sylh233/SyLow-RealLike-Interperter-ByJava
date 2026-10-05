@@ -161,10 +161,17 @@ abstract public class Expr {
 	}
 	public static class FunctionDecl extends Expr{
 		public final List<Token> parameters;
+		public final List<Token> closure;
 		public final Expr body;
 		public FunctionDecl(List<Token> para,Expr body){
 			this.parameters = para;
 			this.body = body;
+			this.closure = null;
+		}
+		public FunctionDecl(List<Token> para,Expr body,List<Token> clos){
+			this.parameters = para;
+			this.body = body;
+			this.closure = clos;
 		}
 	    @Override
 		<R> R accept(Visitor<R> visitor) {
