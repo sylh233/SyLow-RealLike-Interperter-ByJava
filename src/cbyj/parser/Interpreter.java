@@ -48,6 +48,101 @@ public class Interpreter implements Expr.Visitor<Object>,
 					return "<native func:clock>";
 				}
 			});
+
+		globals.define("length", new Callable() {
+				@Override
+				public int arity() {return 1;}
+
+				@Override
+				public Object call(Interpreter interpreter,
+								   List<Object> arguments){
+					Object array = arguments.get(0);
+					if(array instanceof rl_Array){
+						return ((rl_Array)array).length();
+					}else if(array instanceof String){
+						return ((String)array).length();
+					}
+					return null;
+				}
+
+				@Override
+				public String toString(){
+					return "<native func:length>";
+				}
+			});
+
+		globals.define("convert", new Callable() {
+				@Override
+				public int arity() {return 2;}
+
+				@Override
+				public Object call(Interpreter interpreter,
+								   List<Object> arguments){
+					Object object = arguments.get(0);
+					String type = stringify(arguments.get(1));
+					switch (type) {
+					case "I32":
+						object = ifChar2int(object);
+						if(object instanceof Number)
+							return ((Number)object).intValue();
+					    if(object instanceof String){
+							String str = (String)object;
+							if(str.length() <= 0) return 0;
+							else
+								return (int)str.charAt(0);
+						}
+						if(object instanceof Boolean){
+							Boolean bool = (Boolean)object;
+							if(bool) return 0;
+							else return 1;
+						}
+						if(object == null) return -1;
+						break;
+					case "F64":
+						object = ifChar2int(object);
+						if(object instanceof Number)
+							return ((Number)object).doubleValue();
+						if(object instanceof String){
+							String str = (String)object;
+							if(str.length() <= 0) return 0;
+							else
+								return (double)str.charAt(0);
+						}
+						if(object instanceof Boolean){
+							Boolean bool = (Boolean)object;
+							if(bool) return 0.0;
+							else return 1.0;
+						}
+						if(object == null) return -1.0;
+						break;
+					case "C16":
+						if(object instanceof Character) return object;
+						if(object instanceof String){
+							String str = (String)object;
+							if(str.length() <= 0) return '\0';
+							else
+								return str.charAt(0);
+						}
+						if(object instanceof Number)
+							return (char)((Number)object).shortValue();
+						break;
+					case "STRING":
+						return stringify(object);
+					case "BOOL":
+						return isTruthy(object);
+					case "NULL":
+						return null;
+					default:
+						return object;
+					}
+					return null;
+				}
+
+				@Override
+				public String toString(){
+					return "<native func:convert>";
+				}
+			});
 	}
 	
 	// public void interpert(List<Stmt> statements){
@@ -363,6 +458,8 @@ public class Interpreter implements Expr.Visitor<Object>,
 			// "Index must be large than 0!");
 		}else if(condition instanceof Character){
 			index = (int)(char)condition;
+		}else if(condition == null){
+			index = -1;
 		}
 		// else{
 		// 	throw new RuntimeError(select.ques,

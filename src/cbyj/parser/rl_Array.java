@@ -42,7 +42,7 @@ public class rl_Array {
 		}
 	}
 
-	public Integer size(){
+	public Integer length(){
 		return array.length;
 	}
 

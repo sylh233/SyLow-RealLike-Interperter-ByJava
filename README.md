@@ -345,7 +345,7 @@ b = ? 1 array // b = 20
 c = ? 0 "Hello" // c = "H" 是一个字符串而不是一个字符，SyRL的字符等同于一个整数（ASCII）
 ```
 
-- 布尔值(true，false)
+- 布尔值(true，false)与NULL
 ```
 ? true (0) // 0，true在选择表达式的条件中等同于0（而不是1），这是为了使它更接近通常使用的if语句
 ? false (0,1) // 1
@@ -354,6 +354,8 @@ c = ? 0 "Hello" // c = "H" 是一个字符串而不是一个字符，SyRL的字�
 
 $ a = (2, 1),
 ? true a // 2
+
+? null (1,2) // 2，NULL相当于-1
 ```
 
 - 索引
@@ -446,14 +448,88 @@ $ arguments = (argument1,argument2,...,argumentN),
 
 ### 原生函数(Native Function)
 
+#### clock函数
+
+元数:0
+
 参考*Crafting Interpreters by Robert Nystrom*，实现了原生函数"clock"，用于查看当前时间戳
 ```
-// 两种调用方法
 # clock () // 返回字符串 "HH:mm:ss yyyy/MM/dd"
-
-$ a = (),
-# clock a
 ```
+
+
+#### length函数
+
+元数:1
+
+返回字符串或数组的长度
+```
+# length ("Hello") // 5
+
+$ a = (1,2,3)
+# length (a) // 3
+# length ((1,2,3)) // 3
+```
+
+
+#### convert函数
+
+元数:2
+
+几种基本类型的类型转换，若转换失败则返回NULL
+
+- 转整数
+```
+# convert (1.2, "I32") // 1
+# convert ("aa", "I32") // 97
+# convert (True, "I32") // 0，这是为了和选择表达式匹配
+# convert (false, "I32") // 1
+# convert (NULL, "I32") // -1
+```
+
+- 转浮点数
+```
+# convert (1, "F64") // 1.0
+# convert ("aa", "F64") // 97.0
+```
+
+- 转字符
+```
+# convert (97, "C16") // 'a'
+# convert ("aa", "C16") // 'a'
+```
+
+- 转字符串
+```
+# convert (233, "STRING") // "233"
+# convert (null, "STRING") // "NULL"
+# convert (True, "STRING") // "true"
+```
+
+- 转布尔值
+```
+# convert (0, "BOOL") // false
+# convert (123, "BOOL") // true
+
+# convert (0.0, "BOOL") // false
+# convert (123.233, "BOOL") // true
+
+# convert ("", "BOOL") // false
+# convert ("a", "BOOL") // true
+
+# convert (null, "BOOL") // false
+```
+
+- 转NULL
+```
+# convert (xxx, "NULL") // NULL
+```
+
+- 其他
+```
+# convert (xxx, "123") // xxx
+```
+
 
 ### 定义函数
 SyRL的函数都是匿名函数，因此定义函数即声明一个值为匿名函数的变量：
