@@ -1,0 +1,19 @@
+=>[
+	$ count = 0,
+	$ fib = # (n)
+	[
+		count = count + 1,
+		? [n <= 1] (<= [Write n + " ",n]),
+		$ re = [# fib (n-2)] + [# fib (n-1)],
+		Write re + " ",
+		<= re
+	],
+	@{
+		Write :noun "Input a number to get fib-num: ";
+		$ in = Read;
+		? [in == ""] (<);
+		Write :line "\nfib-num: " + # fib (# convert (in,"I32"));
+		Write :line "count: " + count;
+	},
+	0
+]

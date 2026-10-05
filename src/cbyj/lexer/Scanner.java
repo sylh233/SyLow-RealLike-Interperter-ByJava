@@ -196,29 +196,7 @@ public class Scanner{
 			if (peek() == '\n') {
 			    cLine++;
 			}
-			if(peek() == '\\'){
-				advance();
-				switch (peek()) {
-				case 'n':
-					literal += '\n';
-					break;
-				case 't':
-					literal += '\t';
-					break;
-				case '"':
-					literal += '"';
-					break;
-				case '\\':
-					literal += '\\';
-					break;
-				default:
-					literal += ("\\" + peek());
-					break;
-				}
-				advance();
-			}else{
-				literal += advance();
-			}
+			literal += format_char();
 		}
 
 		if (isEnd()) {
@@ -325,13 +303,44 @@ public class Scanner{
 	// 	addToken(STMT, literal);
 	// }
 	private void a_char(){
-		addToken(C16, (char)advance());
+		addToken(C16, (char)format_char());
 		if(peek() == '\''){
 			advance();
 		}else{
 			cbyj.throwError(cLine, "Expect a \"'\" after Char");
 			return;
 		}
+	}
+
+	private char format_char(){
+		if(peek() == '\\'){
+				advance();
+				char c;
+				switch (peek()) {
+				case 'n':
+					c = '\n';
+					break;
+				case 't':
+					c = '\t';
+					break;
+				case '"':
+					c = '"';
+					break;
+				case '\\':
+					c = '\\';
+					break;
+				case '0':
+					c = '\0';
+					break;
+				default:
+					c = peek();
+					break;
+				}
+				advance();
+				return c;
+			}else{
+				return advance();
+			}
 	}
 }
 

@@ -40,9 +40,12 @@ public class Function implements Callable{
 				interpreter.environment.define(decl.parameters.get(i).lexeme,
 											   arguments.get(i));
 			}
-			closure.forEach((name, value) -> {
-					interpreter.environment.define(name, value);
-				});
+			
+			if(closure != null)
+				closure.forEach((name, value) -> {
+						interpreter.environment.define(name, value);
+					});
+			
 			result = interpreter.eval(decl.body);
 		}finally{
 			interpreter.environment = previous;

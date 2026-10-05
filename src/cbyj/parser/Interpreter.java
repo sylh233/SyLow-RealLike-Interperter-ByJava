@@ -89,7 +89,7 @@ public class Interpreter implements Expr.Visitor<Object>,
 							String str = (String)object;
 							if(str.length() <= 0) return 0;
 							else
-								return (int)str.charAt(0);
+								return Integer.parseInt(str);
 						}
 						if(object instanceof Boolean){
 							Boolean bool = (Boolean)object;
@@ -104,9 +104,9 @@ public class Interpreter implements Expr.Visitor<Object>,
 							return ((Number)object).doubleValue();
 						if(object instanceof String){
 							String str = (String)object;
-							if(str.length() <= 0) return 0;
+							if(str.length() <= 0) return 0.0;
 							else
-								return (double)str.charAt(0);
+								return Double.parseDouble(str);
 						}
 						if(object instanceof Boolean){
 							Boolean bool = (Boolean)object;
@@ -192,7 +192,11 @@ public class Interpreter implements Expr.Visitor<Object>,
 	static public String stringify_withquote(Object object){
 		if (object instanceof String) {
 			return "\"" + object + "\"";
-		}else return stringify(object);
+		}else if(object instanceof Character){
+			return "'" + object + "'";
+		}
+		else
+			return stringify(object);
 	}
 	
 	public Object eval(Expr expr){
