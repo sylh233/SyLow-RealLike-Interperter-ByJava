@@ -35,9 +35,8 @@ filename的父目录是scripts文件夹
 
 如需更改启动文件的位置请自行更改makefile的"scripts/"这里
 ```
-runfile: build scripts/$(FILE)
-	java -cp out cbyj.cbyj scripts/$(FILE)
-	#					   ^^^^^^^^ Here
+FILE_PATH ?= $(addprefix scripts/,$(FILE))
+#						 ^^^^^^^ Here
 ```
 
 ### 直接执行
@@ -120,7 +119,7 @@ Write语句的结构为：
 Write [:mode]* "Expression"
 ```
 []内的内容表示可选项，*表示其可以重复；
-Write的mode有noun（默认），line和file（未实现），
+Write的mode有noun（默认），line和file（2026/10/6实现），
 分别对应print，println和文件写入；
 例如：
 ```
@@ -128,17 +127,22 @@ Write "hello" // hello
 Write :noun "hello" // 同上
 Write :line "hello" // 后面有换行 = "hello\n"
 Write :line :noun "hello" // :line被:noun覆盖掉了，还是hello
+
+Write :file "scripts/writeFileTry.txt" "Hello!" // 根目录是java虚拟机的运行目录
 ```
 
 目前支持的语句包括：
 ```
-Write [:mode]* "Expression" // stdout 打印到控制台
-Read // stdin 返回一个控制台的输入，类型为字符串
+Write [:mode ["Filename"]]* "Expression" // stdout 打印到控制台
+Read [:mode ["Filename"]]* // stdin ":std"模式或留空返回一个控制台的输入，类型为字符串；
+						  // ":file"模式后紧跟文件名，读取一个文件的内容，返回字符串
+Load "Filename" // 读取一个.syrl文件并无结构运行（REPL模式结构），作用域为该语句执行处
 $ var [? length] [= value] // 声明语句，?(0.2.0及以前是#)表示要声明一个数组，=后面是初始化的表达式；
 							// 返回字符串"$ var = value"，
 							// 但value是初始化表达式一个求值而非表达式本身，
 							// 借助这个特性可以实现闭包
-`String // 将String作为代码并执行它，代码的结构要求和REPL模式相同；
+`String // 将String作为代码并执行它，代码的结构要求和REPL模式相同（无结构模式）；
+	    // 有自己的作用域；
 		// 元编程特性
 {Statement;Statement;...;Statement;} // 语句块，只能包含语句而非表达式
 	// （其实语句有一种子类型为纯表达式语句，因此表达式也可以是语句的子类型，可以看出SyRL的语句和表达式其实是很模糊的概念），
@@ -149,6 +153,16 @@ $ var [? length] [= value] // 声明语句，?(0.2.0及以前是#)表示要声�
 "Expression" // 纯表达式；在语句块这种只可容纳语句的结构中，表达式被解析为纯表达式语句（其实没什么区别）
 ```
 赋值和选择等属于表达式而非语句，故不再此列
+
+#### 两种运行文件方法的对比
+
+使用Load语句可以运行一个.syrl文件，利用这个方法可以将源代码分散在不同的文件中
+
+Read也可以读取一个.syrl文件，并将其作为字符串，之后可以再用'`'语句执行，而且支持结构完全相同
+
+唯一的区别是作用域：
+- Load的作用域是该语句执行处
+- '`'运行的字符串程序有自己的作用域，在内部声明的变量在结束后会被释放
 
 ### 字符串语句
 作为SyRL的一个基本上"唯一"有特色的特性，字符串语句可以实现类似于函数或者闭包的效果；
