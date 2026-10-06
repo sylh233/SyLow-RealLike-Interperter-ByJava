@@ -23,9 +23,11 @@ abstract public class Stmt {
 		}
 		final Mode mode;
 		final Expr expr;
-		public Write(Expr expr,Mode mode){
+		final Expr filename;
+		public Write(Expr expr,Mode mode,Expr filename){
 			this.mode = mode;
 			this.expr = expr;
+			this.filename = filename;
 		}
 		@Override
 		<R> R accept(Visitor<R> visitor){
@@ -109,6 +111,16 @@ abstract public class Stmt {
 	// 	}
 	// }
 	static class ReadStmt extends Stmt{
+		public static enum Mode{
+			STD,
+			FILE
+		}
+		final Expr filename;
+	    final Mode mode;
+		public ReadStmt(Mode mode,Expr filename){
+			this.mode = mode;
+			this.filename = filename;
+		}
 	    @Override
 		<R> R accept(Visitor<R> visitor) {
 			return visitor.visitReadStmt(this);

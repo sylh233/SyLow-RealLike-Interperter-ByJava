@@ -4,6 +4,7 @@ import static cbyj.lexer.TokenType.*;
 import cbyj.cbyj;
 import cbyj.lexer.*;
 import static cbyj.parser.Stmt.Write;
+import static cbyj.parser.Stmt.ReadStmt;
 import cbyj.func.*;
 import cbyj.*;
 
@@ -13,6 +14,10 @@ import java.util.Arrays;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -616,7 +621,13 @@ public class Interpreter implements Expr.Visitor<Object>,
 			System.out.println(stringify(value));
 			break;
 		case Write.Mode.FILE:
-			// 未实现
+			// 未实现（2026/10/6已实现）
+			try {
+				String filename = stringify(eval(write.filename));
+			    Files.writeString(Path.of(filename), stringify(value));
+			} catch (IOException e) {
+				
+			}
 			break;
 		case Write.Mode.NOUN:
 		default:
@@ -727,14 +738,26 @@ public class Interpreter implements Expr.Visitor<Object>,
 	}
 	@Override
 	public Object visitReadStmt(Stmt.ReadStmt readStmt){
-		InputStreamReader input = new InputStreamReader(System.in);
-		BufferedReader reader = new BufferedReader(input);
-		String inString = "";
-		try {
-			inString = reader.readLine();
-		} catch (IOException e) {}
+		switch (readStmt.mode) {
+		case ReadStmt.Mode.FILE:
+			try{
+				String filename = stringify(eval(readStmt.filename));
+				byte[] bytes = Files.readAllBytes(Paths.get(filename));
+				return new String(bytes,Charset.defaultCharset());
+			}catch(IOException e){
+				return null;
+			}
+		case ReadStmt.Mode.STD:
+		default:
+			InputStreamReader input = new InputStreamReader(System.in);
+			BufferedReader reader = new BufferedReader(input);
+			String inString = "";
+			try {
+				inString = reader.readLine();
+			} catch (IOException e) {}
 		
-		return inString;
+			return inString;
+		}
 	}
 	@Override
 	public Object visitLoadStmt(Stmt.LoadStmt loadStmt){

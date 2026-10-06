@@ -7,6 +7,7 @@ import static cbyj.lexer.TokenType.*;
 import cbyj.cbyj;
 import cbyj.lexer.*;
 import static cbyj.parser.Stmt.Write;
+import static cbyj.parser.Stmt.ReadStmt;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -99,6 +100,7 @@ public class Parser {
 
 	private Stmt writeStmt(){
 		Write.Mode mode = Write.Mode.NOUN;
+		Expr filename = null;
 		while(match(COLON)){
 			Token token = advance();
 			switch (token.lexeme) {
@@ -107,6 +109,7 @@ public class Parser {
 				break;
 			case "file":
 				mode = Write.Mode.FILE;
+				filename = expr();
 				break;
 			case "noun":
 			default:
@@ -116,7 +119,8 @@ public class Parser {
 		}
 		Expr value = expr();
 		// consume(SEMI, "Expect ';' after value!");
-		return new Stmt.Write(value,mode);
+		
+		return new Stmt.Write(value,mode,filename);
 	}
 
 	private Stmt exprStmt(){
@@ -243,7 +247,22 @@ public class Parser {
 	}
 
 	private Stmt readStmt(){
-		return new Stmt.ReadStmt();
+		ReadStmt.Mode mode = ReadStmt.Mode.STD;
+		Expr filename = null;
+		while(match(COLON)){
+			Token token = advance();
+			switch (token.lexeme) {
+			case "file":
+				mode = ReadStmt.Mode.FILE;
+				filename = expr();
+				break;
+			case "std":
+			default:
+				mode = ReadStmt.Mode.STD;
+				break;
+			}
+		}
+		return new Stmt.ReadStmt(mode,filename);
 	}
 
 	private Stmt loadStmt(){
