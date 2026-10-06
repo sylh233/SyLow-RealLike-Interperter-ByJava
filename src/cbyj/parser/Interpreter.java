@@ -5,6 +5,7 @@ import cbyj.cbyj;
 import cbyj.lexer.*;
 import static cbyj.parser.Stmt.Write;
 import cbyj.func.*;
+import cbyj.*;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -82,6 +83,7 @@ public class Interpreter implements Expr.Visitor<Object>,
 					String type = stringify(arguments.get(1));
 					switch (type) {
 					case "I32":
+					case "i32":
 						object = ifChar2int(object);
 						if(object instanceof Number)
 							return ((Number)object).intValue();
@@ -99,6 +101,7 @@ public class Interpreter implements Expr.Visitor<Object>,
 						if(object == null) return -1;
 						break;
 					case "F64":
+					case "f64":
 						object = ifChar2int(object);
 						if(object instanceof Number)
 							return ((Number)object).doubleValue();
@@ -116,6 +119,7 @@ public class Interpreter implements Expr.Visitor<Object>,
 						if(object == null) return -1.0;
 						break;
 					case "C16":
+					case "c16":
 						if(object instanceof Character) return object;
 						if(object instanceof String){
 							String str = (String)object;
@@ -127,10 +131,13 @@ public class Interpreter implements Expr.Visitor<Object>,
 							return (char)((Number)object).shortValue();
 						break;
 					case "STRING":
+					case "string":
 						return stringify(object);
 					case "BOOL":
+					case "bool":
 						return isTruthy(object);
 					case "NULL":
+					case "null":
 						return null;
 					default:
 						return object;
@@ -414,7 +421,7 @@ public class Interpreter implements Expr.Visitor<Object>,
 		return isTruthy(eval(logical.right));
 	}
 	@Override
-	public Object visitStatement(Expr.Statement statement) {
+	public Object visitStatement(Expr.Statement statement){
 		return exec(statement.stmt);
 	}
 	@Override
@@ -700,7 +707,7 @@ public class Interpreter implements Expr.Visitor<Object>,
 	    return;
 	}
 	@Override
-	public Void visitLoopStmt(Stmt.LoopStmt loopStmt) {
+	public Void visitLoopStmt(Stmt.LoopStmt loopStmt){
 		try{
 			while (true) {
 			    exec(loopStmt.block);
@@ -728,6 +735,16 @@ public class Interpreter implements Expr.Visitor<Object>,
 		} catch (IOException e) {}
 		
 		return inString;
+	}
+	@Override
+	public Object visitLoadStmt(Stmt.LoadStmt loadStmt){
+		Object file = eval(loadStmt.filename);
+		try{
+			return cbyj.loadFile(stringify(file));
+		}catch(IOException e){
+			return null;
+			// throw new RuntimeError("Load File Failed!");
+		}
 	}
 }
 

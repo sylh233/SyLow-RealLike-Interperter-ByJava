@@ -1,0 +1,11 @@
+$ count = 0,
+$ fib = # (n)
+[
+	count = count + 1,
+	? [n <= 1] (<= [Write n + " ",n]),
+	$ re = [# fib (n-2)] + [# fib (n-1)],
+	Write re + " ",
+	<= re
+],
+Write :line "Func Fib Loaded!",
+Write :line "Usage: # fib (number)"

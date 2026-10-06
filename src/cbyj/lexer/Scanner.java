@@ -278,6 +278,7 @@ public class Scanner{
 		
 		keywords.put("Write", WRITE);
 		keywords.put("Read", READ);
+		keywords.put("Load", LOAD);
 
 		keywords.put("while", S_WHILE);
 		keywords.put("for", S_FOR);

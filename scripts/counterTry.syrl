@@ -1,4 +1,4 @@
-=>[ // 例子来自 Crafting Interpreters
+=>[ // 例子思路来自 Crafting Interpreters
 	$ makeCounter = # () [
 	  $ a = 0,
 	  $ count = # () % a {
@@ -8,8 +8,8 @@
 	  count
 	],
 	$ counter = # makeCounter (),
-	for ($ i=0;i<10;i = i + 1){
-		# counter ();	
+	for ($ i = 0;i < 10;i = i + 1){
+		# counter ();
 	},
 	0
 ]

@@ -87,6 +87,7 @@ public class Parser {
 		if(match(LESS)) return breakStmt();
 		if(match(RETURN)) return returnStmt();
 		if(match(READ)) return readStmt();
+		if(match(LOAD)) return loadStmt();
 		// sugar
 		if(match(S_BREAK)) return breakSuger();
 		if(match(S_FOR)) return forSuger();
@@ -243,6 +244,11 @@ public class Parser {
 
 	private Stmt readStmt(){
 		return new Stmt.ReadStmt();
+	}
+
+	private Stmt loadStmt(){
+		Expr file = expr();
+		return new Stmt.LoadStmt(file);
 	}
 
 	private Expr expr(){

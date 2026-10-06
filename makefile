@@ -1,9 +1,13 @@
 run: build
-	java -cp out cbyj.cbyj
+	java -cp out cbyj.cbyj repl
 # -cp :classpath; package cbyj: out/cbyj/cbyj.class
 # java用"."作为路径
-build: src/cbyj/*.java src/cbyj/lexer/*.java src/cbyj/parser/*.java src/cbyj/func/*.java
-	javac -d out src/cbyj/*.java src/cbyj/lexer/*.java src/cbyj/parser/*.java src/cbyj/func/*.java
+
+SRC_DIR ?= . lexer parser func
+SRC ?= $(addprefix src/cbyj/,$(addsuffix /*.java,$(SRC_DIR)))
+
+build: $(SRC)
+	javac -d out $(SRC)
 # -d: class放到的地方，会按package作为文件夹，放到out/里面
 # javac则是用"/"
 # javac只识别包的名称
@@ -11,5 +15,9 @@ build: src/cbyj/*.java src/cbyj/lexer/*.java src/cbyj/parser/*.java src/cbyj/fun
 # 例如src/cbyj为package cbyj;
 
 FILE ?= try.syrl
-runfile: build scripts/$(FILE)
-	java -cp out cbyj.cbyj scripts/$(FILE)
+FILE_PATH ?= $(addprefix scripts/,$(FILE))
+runfile: $(FILE_PATH) build
+	java -cp out cbyj.cbyj file $(FILE_PATH)
+
+runload: $(FILE_PATH) build
+	java -cp out cbyj.cbyj load $(FILE_PATH)

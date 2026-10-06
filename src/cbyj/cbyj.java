@@ -18,18 +18,40 @@ public class cbyj {
 	private static final Interpreter interpreter = new Interpreter();
 	
 	public static void main(String[] args) throws IOException{
-	    if(args.length > 1){
-			System.out.println("0/1 parameters!");
-			System.exit(0x40);
-		}else if (args.length == 1) {
-			runFile(args[0]);
-		} else {
+		// 参数: mode filename
+		// mode: repl file load
+		if(args.length <= 0){
 			runPrompt();
+		}else if(args.length == 1){
+			if("repl".equals(args[0])){
+				runPrompt();
+			}
+			else{
+				System.out.println("Have no the Mode:" +
+								   args[0] + "!");
+				System.exit(0x40);
+			}
+		}else if(args.length == 2){
+			switch (args[0]) {
+			case "file":
+				runFile(args[1]);
+			case "load":
+				runLoad(args[1]);
+			default:
+				System.out.println("Mode Failed!");
+				System.exit(0x40);
+				break;
+			}
+		}else {
+			System.out.println("Too More Arguments!");
+				System.exit(0x40);
 		}
 	}
 
 	private static void runFile(String file) throws IOException{
 		byte[] bytes = Files.readAllBytes(Paths.get(file));
+		
+		System.out.println("Start:");
 		Object value = run(new String(bytes,Charset.defaultCharset()));
 		if (hadError) {
 			System.exit(0x41);
@@ -50,6 +72,7 @@ public class cbyj {
 			if (line == null) {
 				break;
 			}
+			System.out.println("Start:");
 		    Object value = run_noStruct(line);
 			printValue(value);
 			hadError = false;
@@ -62,8 +85,6 @@ public class cbyj {
 	}
 
 	private static Object run(String bytes) throws IOException{
-		System.out.println("Start:");
-		
 		Scanner scanner = new Scanner(bytes);
 		List<Token> tokens = scanner.scanTokens();
 
@@ -84,8 +105,6 @@ public class cbyj {
 	}
 
 	private static Object run_noStruct(String bytes) throws IOException{
-		System.out.println("Start:");
-		
 		Scanner scanner = new Scanner(bytes);
 		List<Token> tokens = scanner.scanTokens();
 
@@ -119,5 +138,25 @@ public class cbyj {
 		System.err.println(error.getMessage() +
 						   "\n[Line " + error.token.cLine + "]");
 		hadRuntimeError = true;
+	}
+
+	private static void runLoad(String file) throws IOException{
+		System.out.println("Start:");
+		Object value = loadFile(file);
+		if (hadError) {
+			System.exit(0x41);
+		}
+		if (hadRuntimeError) {
+			System.exit(0x46);
+		}
+		printValue(value);
+		
+		runPrompt();
+	}
+
+	public static Object loadFile(String file) throws IOException{
+		byte[] bytes = Files.readAllBytes(Paths.get(file));
+		String filesrc = new String(bytes,Charset.defaultCharset());
+		return run_noStruct(filesrc);
 	}
 }

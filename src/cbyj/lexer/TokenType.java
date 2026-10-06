@@ -45,6 +45,7 @@ public enum TokenType{
 	SUPER,ORG,					// Super,Origin
 	WRITE,						// Write
 	READ,						// Read
+	LOAD,						// Load
 	TRUE,FALSE,					// true,false
 	NULL,						// NULL
 	F64T,I32T,C16T,STRT,			// Type

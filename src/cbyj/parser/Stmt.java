@@ -114,6 +114,16 @@ abstract public class Stmt {
 			return visitor.visitReadStmt(this);
 		}
 	}
+	static class LoadStmt extends Stmt{
+		final Expr filename;
+		public LoadStmt(Expr filename){
+			this.filename = filename;
+		}
+	    @Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitLoadStmt(this);
+		}
+	}
 	
 	public interface Visitor<R> {
 		R visitWriteStmt(Stmt.Write write);
@@ -126,5 +136,6 @@ abstract public class Stmt {
 		// R visitContinueStmt(Stmt.ContinueStmt continueStmt);
 		R visitReturnStmt(Stmt.ReturnStmt returnStmt);
 		R visitReadStmt(Stmt.ReadStmt readStmt);
+		R visitLoadStmt(Stmt.LoadStmt loadStmt);
 	}
 }

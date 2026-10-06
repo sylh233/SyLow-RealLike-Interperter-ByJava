@@ -525,6 +525,11 @@ $ a = (1,2,3)
 # convert (xxx, "NULL") // NULL
 ```
 
+以上所有的第二个参数均可以为全小写格式：
+```
+# convert (1.2, "i32") // 1
+```
+
 - 其他
 ```
 # convert (xxx, "123") // xxx
@@ -580,7 +585,7 @@ $ Closure = # Parameters % Variables Expression
 
 例如：
 ```
-=>[ // 例子来自 Crafting Interpreters
+=>[ // 例子思路来自 Crafting Interpreters
 	$ makeCounter = # () [
 	  $ a = 0,
 	  $ count = # () % a {
@@ -590,7 +595,7 @@ $ Closure = # Parameters % Variables Expression
 	  count
 	],
 	$ counter = # makeCounter (),
-	for ($ i=0;i<10;i = i + 1){
+	for ($ i = 0;i < 10;i = i + 1){
 		# counter ();	
 	},
 	0
