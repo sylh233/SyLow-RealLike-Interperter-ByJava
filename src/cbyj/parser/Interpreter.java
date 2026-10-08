@@ -5,6 +5,7 @@ import cbyj.cbyj;
 import cbyj.lexer.*;
 import static cbyj.parser.Stmt.Write;
 import static cbyj.parser.Stmt.ReadStmt;
+import static cbyj.parser.Stmt.LoadStmt;
 import cbyj.func.*;
 import cbyj.*;
 
@@ -240,6 +241,10 @@ public class Interpreter implements Expr.Visitor<Object>,
 					return ((Number)left).doubleValue() +
 						((Number)right).doubleValue();
 				}
+			}else if(left instanceof rl_Array){
+				return ((rl_Array)left).append(right);
+			}else if(right instanceof rl_Array){
+				return ((rl_Array)right).put_front(left);
 			}else{
 				return Interpreter.stringify(left) +
 				Interpreter.stringify(right);
@@ -408,10 +413,24 @@ public class Interpreter implements Expr.Visitor<Object>,
 		// return variable.name.literal;
 		Object value = eval(assign.value);
 		if(assign.index == null){
-			environment.assign(assign.name, value);
+			if(assign.b_refer){
+			    Object refer = environment.get(assign.name);
+				if(refer instanceof rl_Refer){
+					((rl_Refer)refer).assign(this, value);
+				}
+			}else{
+				environment.assign(assign.name, value);
+			}
 		}else{
 			Object index = eval(assign.index);
-			environment.assign(assign.name, index, value);
+			if(assign.b_refer){
+			    Object refer = environment.get(assign.name);
+				if(refer instanceof rl_Refer){
+					((rl_Refer)refer).assign(this, index, value);
+				}
+			}else{
+				environment.assign(assign.name, index, value);
+			}
 		}
 		return value;
 	}
@@ -545,6 +564,36 @@ public class Interpreter implements Expr.Visitor<Object>,
 				 // }
 				rl_Array array = (rl_Array)object;
 				return array.get(condition);
+			}else{
+				String str = stringify(object);
+				if(index != null){
+					if(index < 0){
+						index += str.length();
+					}
+					if(index < str.length()){
+						return str.charAt(index);
+					}
+				}
+			}
+		}else if(select.list instanceof Expr.Reference){
+			Expr.Reference refer = (Expr.Reference)select.list;
+			Object object = environment.get(refer.name);
+			if(object instanceof rl_Refer){
+				Object rla = ((rl_Refer)object).get(this);
+				if(rla instanceof rl_Array){
+					rl_Array array = (rl_Array)rla;
+					return array.get(condition);
+				}else{
+					String str = stringify(rla);
+					if(index != null){
+						if(index < 0){
+							index += str.length();
+						}
+						if(index < str.length()){
+							return str.charAt(index);
+						}
+					}
+				}
 			}
 		}
 		// if(condition instanceof Boolean){
@@ -610,6 +659,18 @@ public class Interpreter implements Expr.Visitor<Object>,
 	public Callable visitFuncDecl(Expr.FunctionDecl functionDecl) {
 		Function function = new Function(functionDecl, this);
 	    return function;
+	}
+	@Override
+	public rl_Refer visitReferDecl(Expr.ReferDecl referDecl) {
+		return new rl_Refer(referDecl.name);
+	}
+	@Override
+	public Object visitReference(Expr.Reference reference){
+		Object object = environment.get(reference.name);
+		if(object instanceof rl_Refer){
+			return ((rl_Refer)object).get(this);
+		}
+		return null;
 	}
 	
 	// Stmt
@@ -762,13 +823,30 @@ public class Interpreter implements Expr.Visitor<Object>,
 	@Override
 	public Object visitLoadStmt(Stmt.LoadStmt loadStmt){
 		Object file = eval(loadStmt.filename);
-		try{
-			return cbyj.loadFile(stringify(file));
-		}catch(IOException e){
-			return null;
-			// throw new RuntimeError("Load File Failed!");
+		switch (loadStmt.mode) {
+		case LoadStmt.Mode.ENTRY:
+			try{
+				return cbyj.loadFile(stringify(file),true);
+			}catch(IOException e){
+				return null;
+				// throw new RuntimeError("Load File Failed!");
+			}
+		case LoadStmt.Mode.NOENT:
+		default:
+			try{
+				return cbyj.loadFile(stringify(file),false);
+			}catch(IOException e){
+				return null;
+				// throw new RuntimeError("Load File Failed!");
+			}
 		}
+		
 	}
+	@Override
+	public Void visitExitStmt(Stmt.ExitStmt exitStmt) {
+		throw new ExitException();
+	}
+	public static class ExitException extends RuntimeException{}
 }
 
 class BreakException extends RuntimeException{}

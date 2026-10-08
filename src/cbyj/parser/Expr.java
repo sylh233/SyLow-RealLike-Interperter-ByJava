@@ -69,15 +69,24 @@ abstract public class Expr {
 	    final Token name;
 		final Expr value;
 		final Expr index;
+		final Boolean b_refer;
 		Assign(Token name,Expr expr){
 			this.name = name;
 			this.value = expr;
 			this.index = null;
+			this.b_refer = false;
 		}
 		Assign(Token name,Expr expr,Expr index){
 			this.name = name;
 			this.value = expr;
 			this.index = index;
+			this.b_refer = false;
+		}
+		Assign(Token name,Expr expr,Expr index,Boolean b_refer){
+			this.name = name;
+			this.value = expr;
+			this.index = index;
+			this.b_refer = b_refer;
 		}
 		@Override
 		<R> R accept(Visitor<R> visitor) {
@@ -178,6 +187,31 @@ abstract public class Expr {
 			return visitor.visitFuncDecl(this);
 		}
 	}
+	public static class ReferDecl extends Expr{
+		final Token name;
+		final Token star;
+		public ReferDecl(Token name,Token star){
+			this.name = name;
+			this.star = star;
+		}
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitReferDecl(this);
+		}
+	}
+	public static class Reference extends Expr{
+	    final Token name;
+		final Token percn;
+		public Reference(Token name,Token percn){
+		    this.name = name;
+			this.percn = percn;
+		}
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitReference(this);
+		}
+	}
+	
 	public interface Visitor<R> {
 		R visitBinary(Expr.Binary binary);
 		R visitGrouping(Expr.Grouping grouping);
@@ -192,5 +226,8 @@ abstract public class Expr {
 		R visitSelect(Expr.Select select);
 		R visitCallableExpr(Expr.CallableExpr callableExpr);
 		R visitFuncDecl(Expr.FunctionDecl functionDecl);
+		R visitReferDecl(Expr.ReferDecl referDecl);
+		R visitReference(Expr.Reference reference);
 	}
 }
+

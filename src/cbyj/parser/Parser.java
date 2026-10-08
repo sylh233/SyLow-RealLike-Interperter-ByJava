@@ -8,6 +8,7 @@ import cbyj.cbyj;
 import cbyj.lexer.*;
 import static cbyj.parser.Stmt.Write;
 import static cbyj.parser.Stmt.ReadStmt;
+import static cbyj.parser.Stmt.LoadStmt;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -28,6 +29,7 @@ public class Parser {
 		try{
 			return expr();
 		}catch(ParseError e){
+			synchronize();
 			return null;
 		}
 		// while(!isEnd()){
@@ -49,6 +51,7 @@ public class Parser {
 			} while (!isEnd() && match(COMMA,SEMI));
 			return exprs;
 		} catch (ParseError error) {
+			synchronize();
 		    return null;
 		}
 	}
@@ -89,6 +92,7 @@ public class Parser {
 		if(match(RETURN)) return returnStmt();
 		if(match(READ)) return readStmt();
 		if(match(LOAD)) return loadStmt();
+		if(match(EXIT)) return exitStmt();
 		// sugar
 		if(match(S_BREAK)) return breakSuger();
 		if(match(S_FOR)) return forSuger();
@@ -201,14 +205,16 @@ public class Parser {
 	private Expr select(){
 		// ? [condition] (list);
 		Token qors = previous();
-		Expr condition = or();
+		Expr condition = expr();
 		Expr list;
-		if(match(STRING)){
+		if(match(STRING,I32,F64,C16,TRUE,FALSE,NULL)){
 			list = new Expr.Literal(previous().literal);
 		}else if(match(IDENTIFIER)){
 			list = new Expr.Variable(previous());
 		}else if(match(LEFT_PAREN)){
 			list = arrayExpr();
+		}else if(match(PERCN)){
+			list = refer();
 		}else{
 			list = expr();
 		}
@@ -266,8 +272,25 @@ public class Parser {
 	}
 
 	private Stmt loadStmt(){
+		LoadStmt.Mode mode = LoadStmt.Mode.NOENT;
+		while(match(COLON)){
+			Token token = advance();
+			switch (token.lexeme) {
+			case "entry":
+				mode = LoadStmt.Mode.ENTRY;
+				break;
+			case "noent":
+			default:
+				mode = LoadStmt.Mode.NOENT;
+				break;
+			}
+		}
 		Expr file = expr();
-		return new Stmt.LoadStmt(file);
+		return new Stmt.LoadStmt(file,mode);
+	}
+
+	private Stmt exitStmt(){
+		return new Stmt.ExitStmt();
 	}
 
 	private Expr expr(){
@@ -293,12 +316,21 @@ public class Parser {
 			Expr value = expr();
 			if(expr instanceof Expr.Variable){
 				return new Expr.Assign(((Expr.Variable)expr).name, value);
+			}else if(expr instanceof Expr.Reference){
+			    return new Expr.Assign(((Expr.Reference)expr).name, value,
+									   null, true);
 			}else if(expr instanceof Expr.Select){
 				Expr.Select select = (Expr.Select)expr;
 				if(select.list instanceof Expr.Variable){
 					Expr.Variable var = (Expr.Variable)select.list;
-					return new Expr.Assign(var.name, value, select.condition);
-				}// else if(select.list instanceof Expr.aList){
+					return new Expr.Assign(var.name, value,
+										   select.condition);
+				}else if(select.list instanceof Expr.Reference){
+					Expr.Reference refer = (Expr.Reference)select.list;
+					return new Expr.Assign(refer.name, value,
+										   select.condition, true);
+				}
+				// else if(select.list instanceof Expr.aList){
 				// }
 			}
 			
@@ -466,6 +498,8 @@ public class Parser {
 				return callable();
 			}
 		}
+		if(match(STAR)) return refer_decl();
+		if(match(PERCN)) return refer();
 
 		for (TokenType tokenType : BinaryType) {
 			if(match(tokenType)){
@@ -475,6 +509,21 @@ public class Parser {
 		}
 		
 		throw error(peek(), "Unexpected expression!");
+	}
+
+	private Expr refer_decl(){
+		Token star = previous();
+		Token name = consume(IDENTIFIER,
+							 "Expect a Identifier after '*'!");
+		return new Expr.ReferDecl(name,star);
+	}
+
+	private Expr refer(){
+		Token percn = previous();
+		Token name = consume(IDENTIFIER,
+							 "Expect a Identifier after '%'!");
+		
+		return new Expr.Reference(name,percn);
 	}
 
 	private Expr arrayExpr(){

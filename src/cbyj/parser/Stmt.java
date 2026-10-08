@@ -115,8 +115,8 @@ abstract public class Stmt {
 			STD,
 			FILE
 		}
-		final Expr filename;
 	    final Mode mode;
+		final Expr filename;
 		public ReadStmt(Mode mode,Expr filename){
 			this.mode = mode;
 			this.filename = filename;
@@ -127,13 +127,25 @@ abstract public class Stmt {
 		}
 	}
 	static class LoadStmt extends Stmt{
+		public static enum Mode{
+		    NOENT,
+		    ENTRY
+		}
+	    final Mode mode;
 		final Expr filename;
-		public LoadStmt(Expr filename){
+		public LoadStmt(Expr filename,Mode mode){
 			this.filename = filename;
+			this.mode = mode;
 		}
 	    @Override
 		<R> R accept(Visitor<R> visitor) {
 			return visitor.visitLoadStmt(this);
+		}
+	}
+	static class ExitStmt extends Stmt{
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitExitStmt(this);
 		}
 	}
 	
@@ -149,5 +161,6 @@ abstract public class Stmt {
 		R visitReturnStmt(Stmt.ReturnStmt returnStmt);
 		R visitReadStmt(Stmt.ReadStmt readStmt);
 		R visitLoadStmt(Stmt.LoadStmt loadStmt);
+		R visitExitStmt(Stmt.ExitStmt exitStmt);
 	}
 }

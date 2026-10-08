@@ -46,6 +46,7 @@ public enum TokenType{
 	WRITE,						// Write
 	READ,						// Read
 	LOAD,						// Load
+	EXIT,						// Exit
 	TRUE,FALSE,					// true,false
 	NULL,						// NULL
 	F64T,I32T,C16T,STRT,			// Type

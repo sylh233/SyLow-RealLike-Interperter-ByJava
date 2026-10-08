@@ -47,12 +47,27 @@ public class Environment {
 	public void assign(Token name,Object index,Object value){
 		if (environment.containsKey(name.lexeme)) {
 			Object list = environment.get(name.lexeme);
-			if(!(list instanceof rl_Array)){
-				throw new RuntimeError(name,"The Variable isn't a Array!");
+			// if(!(list instanceof rl_Array)){
+			// 	throw new RuntimeError(name,"The Variable isn't a Array!");
+			// }
+			if(list instanceof rl_Array){
+				rl_Array array = (rl_Array)list;
+				array.assign(index,value);
+				environment.put(name.lexeme,array);
+			}else if(list instanceof String){
+				char[] chars = ((String)list).toCharArray();
+			    if(index instanceof Number){
+					Integer id = ((Number)index).intValue();
+					if(id < 0){
+						id += chars.length;
+					}
+					if(id < chars.length){
+						chars[id] = Interpreter
+							.stringify(value).charAt(0);
+						environment.put(name.lexeme,new String(chars));
+					}
+				}
 			}
-			rl_Array array = (rl_Array)list;
-			array.assign(index,value);
-			environment.put(name.lexeme,array);
 			return;
 		}
 
@@ -61,7 +76,8 @@ public class Environment {
 			return;
 		}
 		
-	    throw new RuntimeError(name, "Undefined List "+name.lexeme+"!");
+	    throw new RuntimeError(name, "Undefined Array Vaiable "
+							   + name.lexeme + "!");
 	}
 
 	public boolean contain(String name){

@@ -46,6 +46,42 @@ public class rl_Array {
 		return array.length;
 	}
 
+	public rl_Array append(Object rear){
+		if(rear instanceof rl_Array){
+			rl_Array rear_array = (rl_Array)rear;
+			Object[] new_array = new Object[this.length() +
+											rear_array.length()];
+			System.arraycopy(this.array, 0,
+							 new_array, 0, this.length());
+			System.arraycopy(rear_array.array, 0,
+							 new_array, this.length(), rear_array.length());
+			
+			Map<Object,Integer> new_index_map = new HashMap<>();
+			this.index_map.forEach((k,v) -> {
+					new_index_map.put(k, v);
+				});
+			rear_array.index_map.forEach((k,v) -> {
+					new_index_map.put(k, v + this.length());
+				});
+
+			return new rl_Array(new_array, new_index_map);
+		}else{
+			Object[] new_array = new Object[this.length() + 1];
+			System.arraycopy(this.array, 0,
+							 new_array, 0, this.length());
+			new_array[new_array.length - 1] = rear;
+			return new rl_Array(new_array, this.index_map);
+		}
+	}
+
+	public rl_Array put_front(Object front){
+		Object[] new_array = new Object[this.length() + 1];
+		System.arraycopy(this.array, 0,
+						 new_array, 1, this.length());
+		new_array[0] = front;
+		return new rl_Array(new_array, this.index_map);
+	}
+
 	@Override
 	public String toString(){
 	    String str = "(";

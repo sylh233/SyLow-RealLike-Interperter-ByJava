@@ -1,0 +1,4 @@
+=>[
+	Write :line "I'll say goodbye!",
+	Exit,0
+]
